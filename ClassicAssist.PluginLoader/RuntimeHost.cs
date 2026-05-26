@@ -94,10 +94,10 @@ namespace Assistant
         [return: MarshalAs( UnmanagedType.Bool )]
         private static extern bool SetDllDirectory( string lpPathName );
 
-        // nethost exports get_hostfxr_path. We load it explicitly (via the plugin folder which
-        // we add to the DLL search path) so the DllImport doesn't fail before we can log.
-        [DllImport( "nethost.dll", CharSet = CharSet.Unicode )]
-        private static extern int get_hostfxr_path_w( [Out] StringBuilder buffer, ref IntPtr buffer_size, IntPtr parameters );
+        // We previously used nethost.dll's get_hostfxr_path to locate hostfxr, but shipping
+        // nethost.dll alongside the plugin is awkward (it's not on a NuGet package, just in
+        // the SDK install). Instead we now probe the well-known .NET install root the same
+        // way LocateHostfxrUnix does — see LocateHostfxrWindows below.
 
         // ---------------- libdl (glibc) ----------------
 
@@ -184,22 +184,54 @@ namespace Assistant
 
         private static string LocateHostfxrWindows( Action<string> log )
         {
-            var sb = new StringBuilder( 1024 );
-            IntPtr size = (IntPtr) sb.Capacity;
-            int rc = get_hostfxr_path_w( sb, ref size, IntPtr.Zero );
-
-            if ( rc == unchecked( (int) 0x80008098 ) ) // HostApiBufferTooSmall
+            // Honour DOTNET_ROOT if set, otherwise probe the well-known install locations.
+            // Mirrors LocateHostfxrUnix — picks the highest-version hostfxr.dll found under
+            // <root>\host\fxr\<version>\hostfxr.dll.
+            string[] roots;
+            string envRoot = Environment.GetEnvironmentVariable( "DOTNET_ROOT" );
+            if ( !string.IsNullOrEmpty( envRoot ) )
             {
-                sb = new StringBuilder( (int) size );
-                rc = get_hostfxr_path_w( sb, ref size, IntPtr.Zero );
+                roots = new[] { envRoot };
+            }
+            else
+            {
+                string programFiles = Environment.GetFolderPath( Environment.SpecialFolder.ProgramFiles );
+                string programFilesX86 = Environment.GetFolderPath( Environment.SpecialFolder.ProgramFilesX86 );
+                string localAppData = Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData );
+                roots = new[]
+                {
+                    Path.Combine( programFiles, "dotnet" ),       // standard 64-bit install
+                    Path.Combine( programFilesX86, "dotnet" ),    // 32-bit (unlikely for net10 x64 but cheap to check)
+                    Path.Combine( localAppData, "Microsoft", "dotnet" ), // per-user install
+                };
             }
 
-            if ( rc != 0 )
+            foreach ( string root in roots )
             {
-                throw new InvalidOperationException( $"get_hostfxr_path failed 0x{rc:X8} — is the .NET 10 runtime installed?" );
+                string fxrDir = Path.Combine( root, "host", "fxr" );
+                if ( !Directory.Exists( fxrDir ) )
+                {
+                    continue;
+                }
+
+                var versions = Directory.GetDirectories( fxrDir )
+                    .Select( d => new { Path = d, Name = Path.GetFileName( d ) } )
+                    .Where( x => TryParseVersion( x.Name, out _ ) )
+                    .OrderByDescending( x => { TryParseVersion( x.Name, out Version v ); return v; } )
+                    .ToArray();
+
+                foreach ( var v in versions )
+                {
+                    string candidate = Path.Combine( v.Path, "hostfxr.dll" );
+                    if ( File.Exists( candidate ) )
+                    {
+                        log( $"  Selected hostfxr from {root} version {v.Name}" );
+                        return candidate;
+                    }
+                }
             }
 
-            return sb.ToString();
+            throw new InvalidOperationException( "hostfxr.dll not found in any known .NET install root (set DOTNET_ROOT to override). Is the .NET 10 runtime installed?" );
         }
 
         // ----- Unix path -----

@@ -1,0 +1,100 @@
+<UserControl x:Name="userControl" x:Class="ClassicAssist.UI.Views.ECV.Settings.ContainerSetsSettingsControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+             xmlns:valueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+             xmlns:valueConverters1="clr-namespace:ClassicAssist.UI.Misc.ValueConverters">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- DebugToolBarStyle moved to Styles section -->
+                <ResourceInclude Source="../../ECV/Icons.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+            <valueConverters1:HexToIntValueConverter x:Key="HexToIntValueConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+        <StyleInclude Source="../../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" DataContext="{Binding ElementName=userControl, Mode=TwoWay, Path=.}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,5">
+                    <StackPanel.Styles>
+        <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+                        <Style Selector="controls|ImageButton">
+                            <Setter Property="Margin" Value="0,0,5,0" />
+                        </Style>
+                    </StackPanel.Styles>
+                    
+                    <controls:ImageButton ImageSource="{StaticResource PlusIcon}" Command="{Binding AddSetCommand}" />
+                    <controls:ImageButton ImageSource="{StaticResource RemoveIcon}"
+                                          Command="{Binding RemoveSetCommand}"
+                                          CommandParameter="{Binding SelectedSet}" />
+                </StackPanel>
+                <ListBox Grid.Row="1" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedSet}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <controls:EditTextBlock Text="{Binding Name}" ShowIcon="True"
+ />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="1" DataContext="{Binding ElementName=userControl, Mode=TwoWay, Path=.}" Margin="10,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,5">
+                    <StackPanel.Styles>
+        <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+                        <Style Selector="controls|ImageButton">
+                            <Setter Property="Margin" Value="0,0,5,0" />
+                        </Style>
+                    </StackPanel.Styles>
+                    
+                    <controls:ImageButton ImageSource="{StaticResource CrosshairIcon}"
+                                          Command="{Binding AddItemCommand}" />
+                    <controls:ImageButton ImageSource="{StaticResource RemoveIcon}"
+                                          Command="{Binding RemoveItemCommand}"
+                                          CommandParameter="{Binding SelectedItem}" />
+                    <controls:ImageButton ImageSource="{StaticResource FindIcon}"
+                                          Command="{Binding IdentifyContainersCommand}"
+                                          CommandParameter="{Binding SelectedSet.Items}" />
+                </StackPanel>
+                <ListBox Grid.Row="1" ItemsSource="{Binding SelectedSet.Items}" SelectedItem="{Binding SelectedItem}"
+                         MinHeight="100">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <controls:EditTextBlock
+                                Text="{Binding Path=., Mode=TwoWay, Converter={StaticResource HexToIntValueConverter}, StringFormat=0x\{0:x8\}}"
+                                ShowIcon="True"
+>
+                                <controls:EditTextBlock.Buttons>
+                                    <controls:ImageButton ImageSource="{StaticResource FindIcon}" BorderThickness="0"
+                                                          HorizontalAlignment="Right" Padding="0" Margin="2,0,0,0"
+                                                          Command="{Binding IdentifyContainersCommand, ElementName=userControl}"
+                                                          CommandParameter="{Binding Path=.}" />
+                                </controls:EditTextBlock.Buttons>
+                            </controls:EditTextBlock>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,18 @@
+<UserControl x:Class="ClassicAssist.Controls.TwoColumnSplitterControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ClassicAssist.Controls">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ContentPresenter x:Name="LeftContentPresenter"
+                          Width="{Binding $parent[local:TwoColumnSplitterControl].LeftContentWidth}"
+                          Content="{Binding $parent[local:TwoColumnSplitterControl].LeftContent}" />
+        <GridSplitter Grid.Column="1" Width="5" />
+        <ContentPresenter x:Name="RightContentPresenter" Grid.Column="2"
+                          Content="{Binding $parent[local:TwoColumnSplitterControl].RightContent}" />
+    </Grid>
+</UserControl>

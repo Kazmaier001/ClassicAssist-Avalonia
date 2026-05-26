@@ -1,0 +1,29 @@
+<UserControl x:Name="userControl"
+             x:Class="ClassicAssist.UI.Views.ECV.Settings.Controls.EditTextBlocks.ClilocEditTextBlock"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:editTextBlocks="clr-namespace:ClassicAssist.UI.Views.ECV.Settings.Controls.EditTextBlocks"
+             d:DesignWidth="300">
+    <UserControl.Styles>
+        <StyleInclude Source="../../../../../../Resources/DarkTheme.axaml" />
+        <StyleInclude Source="../../../../Debug/Styles.axaml" />
+    </UserControl.Styles>
+    <controls:EditTextBlock Text="{Binding Cliloc, ElementName=userControl}"
+                            Label="{Binding Label, ElementName=userControl}" ShowIcon="True" CanEdit="True">
+        <controls:EditTextBlock.Buttons>
+            <StackPanel Orientation="Horizontal">
+                <controls:ImageButton ImageSource="{StaticResource ExportIcon}" BorderThickness="0"
+                                      ToolTip.Tip="{x:Static resources:Strings.Choose_by_Cliloc}"
+                                      HorizontalAlignment="Right" Padding="0" Margin="2,0,0,0"
+                                      Command="{Binding ChooseClilocCommand, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type editTextBlocks:ClilocEditTextBlock}}}"
+                                      CommandParameter="{Binding Cliloc, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type editTextBlocks:ClilocEditTextBlock}}}" />
+                <controls:ImageButton ImageSource="{StaticResource CrosshairIcon}" BorderThickness="0"
+                                      HorizontalAlignment="Right" Padding="0" Margin="2,0,0,0"
+                                      Command="{Binding TargetCommand, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type editTextBlocks:ClilocEditTextBlock}}}" />
+            </StackPanel>
+        </controls:EditTextBlock.Buttons>
+    </controls:EditTextBlock>
+</UserControl>

@@ -1,0 +1,83 @@
+name: release
+
+# Trigger: push a tag like `v0.1.0` (or `v0.1.0-beta.1`) and this workflow
+# builds the plugin, packages a deployable zip, and publishes a draft GitHub
+# release with the zip attached. The draft is created in your repo's Releases
+# page — review the notes there and click Publish when ready.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name (e.g. v0.1.0)'
+        required: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Derive tag
+        id: tag
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_REF -like 'refs/tags/*') {
+            $env:GITHUB_REF -replace 'refs/tags/', ''
+          } else {
+            '${{ github.event.inputs.tag }}'
+          }
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+          echo "version=$($tag -replace '^v','')" >> $env:GITHUB_OUTPUT
+          echo "Tag: $tag"
+
+      - name: Restore
+        run: dotnet restore ClassicAssist.sln
+
+      - name: Build net10 plugin (Release)
+        run: dotnet build ClassicAssist/ClassicAssist.csproj -c Release --no-restore
+
+      - name: Build PluginLoader (net48)
+        run: dotnet build ClassicAssist.PluginLoader/PluginLoader.csproj -c Release --no-restore
+
+      - name: Stage Output/Plugin
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force Output\Plugin -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force Output\Plugin | Out-Null
+          Copy-Item -Recurse Output\net10.0\* Output\Plugin\
+          Copy-Item Output\PluginLoader\ClassicAssist.PluginLoader.dll, `
+                    Output\PluginLoader\ClassicAssist.PluginLoader.pdb `
+                    -Destination Output\Plugin\
+
+      - name: Package zip
+        shell: pwsh
+        run: |
+          $name = "ClassicAssist-Avalonia-${{ steps.tag.outputs.version }}.zip"
+          Compress-Archive -Path Output\Plugin\* -DestinationPath $name -Force
+          echo "ARTIFACT=$name" >> $env:GITHUB_ENV
+          echo "Packaged: $name"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-zip
+          path: ClassicAssist-Avalonia-*.zip
+
+      - name: Create draft GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          draft: true
+          generate_release_notes: true
+          files: ClassicAssist-Avalonia-*.zip

@@ -1,0 +1,14 @@
+<UserControl x:Class="ClassicAssist.UI.Controls.HueEntryControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             d:DesignHeight="20" d:DesignWidth="640">
+    <!-- DesignStyle removed (WPF-only) -->
+    <StackPanel Orientation="Horizontal" x:Name="StackPanel">
+        <StackPanel.Styles>
+            <Style Selector="Rectangle">
+                <Setter Property="Fill" Value="Black" />
+            </Style>
+        </StackPanel.Styles>
+    </StackPanel>
+</UserControl>

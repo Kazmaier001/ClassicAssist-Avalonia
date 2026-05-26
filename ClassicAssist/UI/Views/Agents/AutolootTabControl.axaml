@@ -1,0 +1,320 @@
+﻿<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:agents="clr-namespace:ClassicAssist.UI.ViewModels.Agents"
+    xmlns:misc="clr-namespace:ClassicAssist.UI.Misc"
+    xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+    xmlns:autoloot="clr-namespace:ClassicAssist.Data.Autoloot"
+    xmlns:ValueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+    xmlns:misc1="clr-namespace:ClassicAssist.Misc"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+    xmlns:draggableTreeView="clr-namespace:ClassicAssist.Controls.DraggableTreeView;assembly=ClassicAssist.Controls"
+    xmlns:valueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+    xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+    xmlns:autoloot1="clr-namespace:ClassicAssist.UI.Views.Autoloot"
+    xmlns:autoloot2="clr-namespace:ClassicAssist.UI.Views.Agents.Autoloot"
+    xmlns:behaviours1="clr-namespace:ClassicAssist.UI.Misc.Behaviours"
+    x:Class="ClassicAssist.UI.Views.Agents.AutolootTabControl"
+    d:DesignHeight="250" d:DesignWidth="600" x:Name="userControl">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/Icons.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <misc1:BindingProxy x:Key="Proxy" Data="{Binding}" />
+            <ValueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+            <ValueConverters:AutolootOperatorFilterValueConverter x:Key="AutolootOperatorFilterValueConverter" />
+            <ValueConverters:DraggableGroupVisibilityValueConverter x:Key="DraggableGroupVisibilityConverter" />
+            <valueConverters:DoubleToGridLengthConverter x:Key="DoubleToGridLengthConverter" />
+            <valueConverters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+            <valueConverters:NullToDoNothingConverter x:Key="NullToDoNothingConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <UserControl.DataContext>
+        <agents:AutolootViewModel />
+    </UserControl.DataContext>
+    <Grid>
+        <Grid.Resources>
+            <valueConverters:NullToBooleanConverter x:Key="NullToBooleanValueConverter" />
+        </Grid.Resources>
+        <i:Interaction.Behaviors>
+            <behaviours1:ClipboardBehaviour CopyCommand="{Binding ClipboardCopyCommand}"
+                                     PasteCommand="{Binding ClipboardPasteCommand}"
+                                     CommandParameter="{Binding SelectedProperties}" />
+        </i:Interaction.Behaviors>
+        <Grid.ColumnDefinitions>
+            <!-- TwoWay so GridSplitter's direct write to Width propagates back to the VM via DoubleToGridLengthConverter.ConvertBack.
+                 The old setup (OneWay + GridSizeChangedBehaviour on the inner grid) was a workaround that produced two bugs:
+                   (1) hover-triggered transient layout passes compressed Col 0, and the behavior persisted the compressed value;
+                   (2) GridSplitter wrote to ColumnDefinition.Width but the OneWay binding overwrote it on the next refresh,
+                       so the divider appeared unresponsive to drag. -->
+            <ColumnDefinition Width="{Binding LeftColumnWidth, Mode=TwoWay, Converter={StaticResource DoubleToGridLengthConverter}}" MinWidth="100" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="*" MinWidth="100" />
+        </Grid.ColumnDefinitions>
+        <Grid Margin="10" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0">
+                <CheckBox Content="{x:Static resources:Strings.Enabled}" IsChecked="{Binding Enabled}" />
+                <CheckBox Content="{x:Static resources:Strings.Disable_inside_guardzone}"
+                          IsChecked="{Binding DisableInGuardzone}" />
+                <CheckBox Content="{x:Static resources:Strings.Loot_humanoids}" IsChecked="{Binding LootHumanoids}" />
+            </StackPanel>
+            <Border Background="#151515" BorderBrush="{DynamicResource ThemeBorderBrush}"
+                    BorderThickness="1" Grid.Row="1" Margin="0,10,0,10">
+                <ScrollViewer x:Name="ScrollViewer" VerticalScrollBarVisibility="Auto">
+                    <i:Interaction.Behaviors>
+                        <misc:ScrollOnDragDrop />
+                    </i:Interaction.Behaviors>
+                    <draggableTreeView:DraggableTreeView x:Name="listView"
+                                                         ItemsSource="{Binding Draggables}"
+                                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                         BorderThickness="0"
+                                                         AllowDragGroups="False"
+                                                         PointerWheelChanged="DraggableTreeView_OnPreviewMouseWheel"
+                                                         BindableSelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                                                         BindableSelectedGroup="{Binding SelectedGroup, Mode=TwoWay}" Classes="CompressedTreeViewStyle">
+                        <draggableTreeView:DraggableTreeView.DataTemplates>
+                            <TreeDataTemplate DataType="{x:Type autoloot:AutolootEntry}">
+                                <controls:EditTextBlock
+                                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                    ShowIcon="True"
+>
+                                    <controls:EditTextBlock.Label>
+                                        <MultiBinding StringFormat="{}{0} - 0x{1:x}">
+                                            <Binding Path="Name" />
+                                            <Binding Path="ID" />
+                                        </MultiBinding>
+                                    </controls:EditTextBlock.Label>
+                                </controls:EditTextBlock>
+                            </TreeDataTemplate>
+                            <TreeDataTemplate DataType="{x:Type autoloot:AutolootGroup}"
+                                                      ItemsSource="{Binding Children}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox IsChecked="{Binding Enabled}" Grid.Column="0" Margin="0,0,5,0" />
+                                    <controls:EditTextBlock
+                                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                        Grid.Column="1"
+>
+                                    </controls:EditTextBlock>
+                                </Grid>
+                            </TreeDataTemplate>
+                        </draggableTreeView:DraggableTreeView.DataTemplates>
+                        <!-- InputBindings removed (WPF-only). KeyBindings handled at window level. -->
+                        <i:Interaction.Behaviors>
+                            <behaviours1:ItemsControlSelectNewEntryBehaviour SelectedItem="{Binding SelectedItem}"
+                                                                      Type="{x:Type autoloot:AutolootEntry}" />
+                        </i:Interaction.Behaviors>
+                        <draggableTreeView:DraggableTreeView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{x:Static resources:Strings.New_Group}"
+                                          Command="{Binding Source={StaticResource Proxy}, Path=Data.NewGroupCommand}" />
+                                <MenuItem Header="{x:Static resources:Strings.Remove_Group}"
+                                          Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveGroupCommand}"
+                                          CommandParameter="{Binding SelectedGroup}" />
+                                <Separator />
+                                <MenuItem Header="{x:Static resources:Strings.Move_to_group}"
+                                          ItemsSource="{Binding Draggables}">
+                                    <MenuItem.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}" />
+                                        </DataTemplate>
+                                    </MenuItem.ItemTemplate>
+                                    <MenuItem.ItemContainerTheme>
+                                        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                            <Setter Property="IsVisible" Value="{Binding Converter={StaticResource DraggableGroupVisibilityConverter}}" />
+                                            <Setter Property="Command" Value="{Binding Source={StaticResource Proxy}, Path=Data.MoveToGroupCommand}" />
+                                            <Setter Property="CommandParameter" Value="{Binding}" />
+                                        </ControlTheme>
+                                    </MenuItem.ItemContainerTheme>
+                                </MenuItem>
+                            </ContextMenu>
+                        </draggableTreeView:DraggableTreeView.ContextMenu>
+                    </draggableTreeView:DraggableTreeView>
+                </ScrollViewer>
+            </Border>
+            <StackPanel Grid.Row="2">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Padding" Value="4" />
+                        </Style>
+                    </Grid.Styles>
+                    <Button Content="{x:Static resources:Strings.Remove}" Grid.Column="0" Margin="0,0,5,0"
+                            Command="{Binding RemoveCommand}"
+                            CommandParameter="{Binding SelectedItem, ElementName=listView}" />
+                    <Button Content="{x:Static resources:Strings.Insert}" Grid.Column="1" Margin="5,0,0,0"
+                            behaviours1:ClickOpensContextMenuBehaviour.Enabled="True">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{x:Static resources:Strings.ID_from_target}"
+                                          Command="{Binding Source={StaticResource Proxy}, Path=Data.InsertCommand}" />
+                                <MenuItem Header="{x:Static resources:Strings.Match_Any_ID}"
+                                          Command="{Binding Source={StaticResource Proxy}, Path=Data.InsertMatchAnyCommand}" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button Content="{x:Static resources:Strings.Set_Container}" Margin="0,10,5,0"
+                            Command="{Binding SetContainerCommand}" Grid.Column="0" />
+                    <Image Source="{StaticResource configureIcon}" Height="16" Margin="5,10,0,0" Grid.Column="1"
+                           behaviours1:ClickOpensContextMenuBehaviour.Enabled="True">
+                        <Image.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{x:Static resources:Strings.Reset_Container}"
+                                          Command="{Binding Source={StaticResource Proxy}, Path=Data.ResetContainerCommand}" />
+                                <MenuItem Header="{x:Static resources:Strings.Define_Custom_Properties}"
+                                          Command="{Binding Source={StaticResource Proxy}, Path=Data.DefineCustomPropertiesCommand}" />
+                                <MenuItem Header="{x:Static resources:Strings.CSV_Import}"
+                                          Command="{Binding Source={StaticResource Proxy}, Path=Data.CSVImportCommand}" />
+                            </ContextMenu>
+                        </Image.ContextMenu>
+                    </Image>
+                </Grid>
+            </StackPanel>
+        </Grid>
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Margin="0,10" />
+        <Grid Grid.Column="2" Margin="10"
+              IsEnabled="{Binding SelectedItem, Converter={StaticResource NullToBooleanValueConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ComboBox x:Name="comboBox" Grid.Row="0" ItemsSource="{Binding Constraints}"
+                      HorizontalAlignment="Stretch" SelectedIndex="0">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="autoloot:PropertyEntry">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Grid Grid.Row="1" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <CheckBox Content="{x:Static resources:Strings.Enabled}" Grid.Column="0"
+                          IsChecked="{Binding SelectedItem.Enabled}" />
+                <Label Grid.Column="1" Content="{x:Static resources:Strings.Priority_}" HorizontalAlignment="Right"
+                       Margin="0,0,5,0" />
+                <ComboBox SelectedItem="{Binding SelectedItem.Priority, Mode=TwoWay}"
+                          ItemsSource="{Binding Source={misc:EnumBindingSource {x:Type autoloot:AutolootPriority}}}"
+                          HorizontalAlignment="Stretch"
+                          Grid.Column="2" />
+            </Grid>
+            <DataGrid x:Name="listView1" Grid.Row="2" Margin="0,10,0,10"
+                      ItemsSource="{Binding SelectedItem.Constraints}" SelectedItem="{Binding SelectedProperty}">
+                <i:Interaction.Behaviors>
+                    <behaviours1:ListViewMultiSelectionBehaviour SelectedItems="{Binding SelectedProperties}" />
+                </i:Interaction.Behaviors>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Property}" Width="175">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <autoloot1:AutolootPropertyControl DataContext="{Binding}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Operator}" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="autoloot:AutolootConstraintEntry">
+                                    <Border HorizontalAlignment="Center" VerticalAlignment="Center" Width="80" Background="Transparent">
+                                        <ComboBox HorizontalAlignment="Stretch"
+                                                  SelectedItem="{Binding Operator, Mode=TwoWay, Converter={StaticResource NullToDoNothingConverter}}">
+                                            <ComboBox.ItemsSource>
+                                                <MultiBinding
+                                                    Converter="{StaticResource AutolootOperatorFilterValueConverter}">
+                                                    <Binding Source="{x:Type autoloot:AutolootOperator}" />
+                                                    <Binding Path="Property" />
+                                                </MultiBinding>
+                                            </ComboBox.ItemsSource>
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate DataType="autoloot:AutolootOperator">
+                                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Value}" Width="*">
+                            <DataGridTemplateColumn.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" HorizontalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.HeaderTemplate>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <autoloot1:AutolootValueControl DataContext="{Binding}"
+                                                                    HorizontalAlignment="Stretch" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel Grid.Row="3">
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Content="{x:Static resources:Strings.Remove}" Grid.Column="0" Margin="0,0,5,0"
+                            Command="{Binding RemoveConstraintCommand}"
+                            CommandParameter="{Binding SelectedProperties}" />
+                    <Button Content="{x:Static resources:Strings.Insert}" Grid.Column="1" Margin="5,0,0,0"
+                            Command="{Binding InsertConstraintCommand}"
+                            CommandParameter="{Binding SelectedValue, ElementName=comboBox}" />
+                </Grid>
+                <WrapPanel Orientation="Horizontal">
+                    <WrapPanel.Styles>
+                        <Style Selector="CheckBox">
+                            <Setter Property="Margin" Value="0,0,10,0" />
+                        </Style>
+                    </WrapPanel.Styles>
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding SelectedItem.Rehue}">
+                            <TextBlock Text="{x:Static resources:Strings.Rehue_matching_items}"
+                                       VerticalAlignment="Center" />
+                        </CheckBox>
+                        <Button Margin="0,0,10,0" Command="{Binding SelectHueCommand}"
+                                CommandParameter="{Binding SelectedItem, ElementName=listView}">
+                            <Image Source="{StaticResource ColorWheelIcon}" Height="12" Width="12" />
+                        </Button>
+                    </StackPanel>
+                    <CheckBox Content="{x:Static resources:Strings.Autoloot_matching_items}"
+                              IsChecked="{Binding SelectedItem.Autoloot}" />
+                    <CheckBox Content="{x:Static resources:Strings.Requeue_failed_items}"
+                              IsChecked="{Binding RequeueFailedItems}" />
+                    <CheckBox Content="{x:Static resources:Strings.Match_text_value_of_property__UOAlive_}"
+                              IsChecked="{Binding MatchTextValue}" />
+                </WrapPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

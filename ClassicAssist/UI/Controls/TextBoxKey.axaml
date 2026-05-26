@@ -1,0 +1,43 @@
+<UserControl x:Class="ClassicAssist.UI.Controls.TextBoxKey"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             d:DesignHeight="300" d:DesignWidth="300" x:Name="UserControl">
+    <UserControl.Styles>
+        <!-- WPF: idle #333333, focused #292929 (recessed when capturing keys),
+             disabled #272727 (matches the disabled TextBox fill). The idle
+             background MUST come from a Style, not a local Background=
+             attribute on the Border — local values beat style setters, so an
+             attribute would pin #333333 across all states. -->
+        <Style Selector="Border#Root">
+            <Setter Property="Background" Value="#333333" />
+            <Setter Property="BorderBrush" Value="#4B4B4B" />
+        </Style>
+        <Style Selector="Border#Root:focus">
+            <Setter Property="Background" Value="#292929" />
+            <Setter Property="BorderBrush" Value="#4B4B4B" />
+        </Style>
+        <Style Selector="Border#Root:focus-within">
+            <Setter Property="Background" Value="#292929" />
+            <Setter Property="BorderBrush" Value="#4B4B4B" />
+        </Style>
+        <Style Selector="Border#Root:disabled">
+            <Setter Property="Background" Value="#272727" />
+            <Setter Property="BorderBrush" Value="#333333" />
+        </Style>
+    </UserControl.Styles>
+    <!-- Border + TextBlock instead of a real TextBox: a TextBox swallows Backspace,
+         Ctrl+A, arrow keys, etc. in its own KeyDown handler before our handler ever
+         sees them. A focusable Border bypasses that — we get every keystroke. -->
+    <Border x:Name="Root" Focusable="True"
+            BorderThickness="1"
+            Padding="4,3" MinHeight="22"
+            KeyDown="Root_KeyDown" KeyUp="Root_KeyUp"
+            PointerPressed="Root_PointerPressed"
+            PointerWheelChanged="Root_PointerWheelChanged">
+        <TextBlock x:Name="DisplayText"
+                   Text="{Binding Shortcut, ElementName=UserControl, Mode=OneWay}"
+                   Foreground="#CCCCCC"
+                   VerticalAlignment="Center" />
+    </Border>
+</UserControl>

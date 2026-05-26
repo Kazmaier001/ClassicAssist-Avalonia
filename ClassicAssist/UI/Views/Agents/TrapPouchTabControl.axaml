@@ -1,0 +1,100 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:agents="clr-namespace:ClassicAssist.UI.ViewModels.Agents"
+    xmlns:ValueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+    xmlns:trapPouch="clr-namespace:ClassicAssist.Data.TrapPouch"
+    x:Class="ClassicAssist.UI.Views.Agents.TrapPouchTabControl"
+    d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ValueConverters:IntToHexStringValueConverter x:Key="IntToHexStringValueConverter" />
+            <agents:TrapPouchTabViewModel x:Key="DummyData">
+                <agents:TrapPouchTabViewModel.Items>
+                    <trapPouch:TrapPouchEntry Name="pouch" Serial="4660" />
+                    <trapPouch:TrapPouchEntry Name="pouch" Serial="5678" />
+                    <trapPouch:TrapPouchEntry Name="pouch" Serial="1234" />
+                </agents:TrapPouchTabViewModel.Items>
+            </agents:TrapPouchTabViewModel>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <UserControl.DataContext>
+        <agents:TrapPouchTabViewModel />
+    </UserControl.DataContext>
+    <Grid d:DataContext="{StaticResource DummyData}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <DataGrid Grid.Row="0" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Serial}"
+                                        Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="trapPouch:TrapPouchEntry">
+                                    <TextBlock
+                                        Text="{Binding Serial, Converter={StaticResource IntToHexStringValueConverter}}"
+                                        Foreground="{DynamicResource ThemeForegroundBrush}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="{x:Static resources:Strings.Name}"
+                                        Binding="{Binding Name}" Width="200" />
+                    </DataGrid.Columns>
+            </DataGrid>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Content="{x:Static resources:Strings.Insert}" Grid.Column="0" Margin="0,5,5,0"
+                        Command="{Binding InsertCommand}" />
+                <Button Content="{x:Static resources:Strings.Remove}" Grid.Column="1" Margin="5,5,5,0"
+                        Command="{Binding RemoveCommand}" CommandParameter="{Binding SelectedItem}" />
+                <Button Content="{x:Static resources:Strings.Clear}" Grid.Column="2" Margin="5, 5, 0, 0"
+                        Command="{Binding ClearCommand}" />
+            </Grid>
+        </Grid>
+        <StackPanel Grid.Column="1" Margin="0,10,10,10">
+            <CheckBox Content="{x:Static resources:Strings.Auto_add_targeted_pouches}"
+                      IsChecked="{Binding AutoAddTargetedPouches}" />
+            <CheckBox Content="{x:Static resources:Strings.Only_if_last_spell_is_Magic_Trap}" Margin="20,0,0,0"
+                      IsChecked="{Binding AutoAddOnlyMagicTrap}" IsEnabled="{Binding AutoAddTargetedPouches}" />
+            <CheckBox Content="{x:Static resources:Strings.Remove_item_on_use_object_request}"
+                      IsChecked="{Binding AutoRemoveItem}" />
+            <StackPanel Orientation="Horizontal">
+                <CheckBox Content="{x:Static resources:Strings.Rehue_matching_items}"
+                          IsChecked="{Binding RehueItems}" />
+                <Button Margin="10,0,0,0" Command="{Binding SelectHueCommand}"
+                        CommandParameter="{Binding RehueItemsHue}" Padding="4">
+                    <Image Source="{StaticResource ColorWheelIcon}" Height="12" Width="12" />
+                </Button>
+            </StackPanel>
+            <CheckBox IsChecked="{Binding WarnItemCount}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{x:Static resources:Strings.Warn_when_item_count_below_}"
+                               VerticalAlignment="Center" Margin="0,0,5,0" />
+                    <NumericUpDown FormatString="0" Minimum="0" Value="{Binding WarnItemCountAmount}" IsEnabled="{Binding WarnItemCount}" />
+                </StackPanel>
+            </CheckBox>
+            <CheckBox Content="{x:Static resources:Strings.Overhead_Message}" Margin="20,0,0,0"
+                      IsChecked="{Binding WarnOverheadMessage}" IsEnabled="{Binding WarnItemCount}" />
+            <CheckBox Content="{x:Static resources:Strings.Show_remaining_trap_pouches_on_use}"
+                      IsChecked="{Binding ShowRemainingCount}" />
+            <CheckBox Content="{x:Static resources:Strings.Overhead_Message}" Margin="20,0,0,0"
+                      IsChecked="{Binding ShowRemainingOverhead}" IsEnabled="{Binding ShowRemainingCount}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

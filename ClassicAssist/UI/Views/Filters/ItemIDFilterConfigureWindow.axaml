@@ -1,0 +1,192 @@
+<Window x:Class="ClassicAssist.UI.Views.Filters.ItemIDFilterConfigureWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+        xmlns:filters="clr-namespace:ClassicAssist.UI.ViewModels.Filters"
+        xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+        xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+        xmlns:misc="clr-namespace:ClassicAssist.Misc"
+        xmlns:filters1="clr-namespace:ClassicAssist.Data.Filters"
+        xmlns:itemIdFilter="clr-namespace:ClassicAssist.UI.Views.Filters.ItemIDFilter" Background="{DynamicResource ThemeWindowBackgroundBrush}"
+        Title="{x:Static resources:Strings.ItemID_Filter}" Height="350" Width="420">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- DebugToolBarStyle moved to Styles section -->
+                <ResourceDictionary>
+                    <DrawingImage x:Key="PopupIcon">
+                        <DrawingImage.Drawing>
+                            <DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+                                <GeometryDrawing Brush="{DynamicResource ThemeForegroundBrush}"
+                                                 Geometry="F1 M512,512z M0,0z M352,0C339.1,0 327.4,7.8 322.4,19.8 317.4,31.8 320.2,45.5 329.3,54.7L370.7,96 201.4,265.4C188.9,277.9 188.9,298.2 201.4,310.7 213.9,323.2 234.2,323.2 246.7,310.7L416,141.3 457.4,182.7C466.6,191.9 480.3,194.6 492.3,189.6 504.3,184.6 512.1,173 512.1,160L512.1,32C512.1,14.3,497.8,0,480.1,0L352,0z M80,32C35.8,32,0,67.8,0,112L0,432C0,476.2,35.8,512,80,512L400,512C444.2,512,480,476.2,480,432L480,320C480,302.3 465.7,288 448,288 430.3,288 416,302.3 416,320L416,432C416,440.8,408.8,448,400,448L80,448C71.2,448,64,440.8,64,432L64,112C64,103.2,71.2,96,80,96L192,96C209.7,96 224,81.7 224,64 224,46.3 209.7,32 192,32L80,32z" />
+                            </DrawingGroup>
+                        </DrawingImage.Drawing>
+                    </DrawingImage>
+                    <DrawingImage x:Key="PlusIcon">
+                        <DrawingImage.Drawing>
+                            <DrawingGroup ClipGeometry="M0,0 V512 H448 V0 H0 Z">
+                                <GeometryDrawing Brush="{DynamicResource ThemeForegroundBrush}"
+                                                 Geometry="F1 M448,512z M0,0z M240,80C240,62.3 225.7,48 208,48 190.3,48 176,62.3 176,80L176,224 32,224C14.3,224 0,238.3 0,256 0,273.7 14.3,288 32,288L176,288 176,432C176,449.7 190.3,464 208,464 225.7,464 240,449.7 240,432L240,288 384,288C401.7,288 416,273.7 416,256 416,238.3 401.7,224 384,224L240,224 240,80z" />
+                            </DrawingGroup>
+                        </DrawingImage.Drawing>
+                    </DrawingImage>
+                    <DrawingImage x:Key="RemoveIcon">
+                        <DrawingImage.Drawing>
+                            <DrawingGroup ClipGeometry="M0,0 V512 H320 V0 H0 Z">
+                                <DrawingGroup.Transform>
+                                    <TranslateTransform X="0.074999988079071045" Y="0" />
+                                </DrawingGroup.Transform>
+                                <GeometryDrawing Brush="{DynamicResource ThemeForegroundBrush}"
+                                                 Geometry="F1 M320,512z M0,0z M310.6,150.6C323.1,138.1 323.1,117.8 310.6,105.3 298.1,92.8 277.8,92.8 265.3,105.3L160,210.7 54.6,105.4C42.1,92.9 21.8,92.9 9.3,105.4 -3.2,117.9 -3.2,138.2 9.3,150.7L114.7,256 9.4,361.4C-3.1,373.9 -3.1,394.2 9.4,406.7 21.9,419.2 42.2,419.2 54.7,406.7L160,301.3 265.4,406.6C277.9,419.1 298.2,419.1 310.7,406.6 323.2,394.1 323.2,373.8 310.7,361.3L205.3,256 310.6,150.6z" />
+                            </DrawingGroup>
+                        </DrawingImage.Drawing>
+                    </DrawingImage>
+                    <misc:BindingProxy x:Key="Proxy" Data="{Binding}" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.Styles>
+        <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </Window.Styles>
+    <Window.DataContext>
+        <filters:ItemIDFilterConfigureWindowViewModel />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="5,5,5,0">
+            <controls:ImageButton ToolTip.Tip="{x:Static resources:Strings.Add}" Command="{Binding AddCommand}"
+                                  ImageSource="{StaticResource PlusIcon}" ImageHeight="20"
+                                  Margin="2,0" Padding="4,2" />
+            <controls:ImageButton ToolTip.Tip="{x:Static resources:Strings.Remove}" Command="{Binding RemoveCommand}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=listView}"
+                                  ImageSource="{StaticResource RemoveIcon}" ImageHeight="20"
+                                  Margin="2,0" Padding="4,2" />
+        </StackPanel>
+        <Grid Margin="10" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <DataGrid x:Name="listView" Grid.Row="0" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
+                      ScrollViewer.VerticalScrollBarVisibility="Visible">
+                <DataGrid.Resources>
+                    <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+                    <valueConverters:IntToHexStringValueConverter x:Key="IntToHexStringValueConverter" />
+                </DataGrid.Resources>
+                <DataGrid.Styles>
+        <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+                    <Style Selector="Button">
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="Padding" Value="0" />
+                    </Style>
+                    <Style Selector="controls|EditTextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+                    </Style>
+                </DataGrid.Styles>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="&#x2713;" Width="25">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="filters1:ItemIDFilterEntry">
+                                    <CheckBox IsChecked="{Binding Enabled}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Source_ID}" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="filters1:ItemIDFilterEntry">
+                                    <controls:EditTextBlock HorizontalAlignment="Stretch" Margin="4,0"
+                                            Text="{Binding SourceID, Converter={StaticResource IntToHexStringValueConverter}}"
+                                            ShowIcon="True">
+                                        <controls:EditTextBlock.Buttons>
+                                            <StackPanel Orientation="Horizontal">
+                                                <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                <controls:ImageButton ImageSource="{StaticResource PopupIcon}"
+                                                                      ImageHeight="12"
+                                                                      Command="{Binding Data.SelectSourceIDCommand, Source={StaticResource Proxy}}"
+                                                                      CommandParameter="{Binding}" />
+                                                <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                <controls:ImageButton ImageSource="{StaticResource CrosshairIcon}"
+                                                                      ImageHeight="12"
+                                                                      Command="{Binding Data.TargetSourceIDCommand, Source={StaticResource Proxy}}"
+                                                                      CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </controls:EditTextBlock.Buttons>
+                                        <ToolTip.Tip>
+                                            <itemIdFilter:ItemIDTooltipControl ItemID="{Binding SourceID}" />
+                                        </ToolTip.Tip>
+                                    </controls:EditTextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Destination_ID}" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="filters1:ItemIDFilterEntry">
+                                    <controls:EditTextBlock HorizontalAlignment="Stretch" Margin="4,0"
+                                            Text="{Binding DestinationID, Converter={StaticResource IntToHexStringValueConverter}}"
+                                            ShowIcon="True">
+                                        <controls:EditTextBlock.Buttons>
+                                            <StackPanel Orientation="Horizontal">
+                                                <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                <controls:ImageButton ImageSource="{StaticResource PopupIcon}"
+                                                                      ImageHeight="12"
+                                                                      Command="{Binding Data.SelectDestinationIDCommand, Source={StaticResource Proxy}}"
+                                                                      CommandParameter="{Binding}" />
+                                                <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                <controls:ImageButton ImageSource="{StaticResource CrosshairIcon}"
+                                                                      ImageHeight="12"
+                                                                      Command="{Binding Data.TargetDestinationIDCommand, Source={StaticResource Proxy}}"
+                                                                      CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </controls:EditTextBlock.Buttons>
+                                        <ToolTip.Tip>
+                                            <itemIdFilter:ItemIDTooltipControl ItemID="{Binding DestinationID}"
+                                                    Hue="{Binding Hue}" />
+                                        </ToolTip.Tip>
+                                    </controls:EditTextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Color}" Width="78">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="filters1:ItemIDFilterEntry">
+                                    <Grid Margin="4,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <controls:EditTextBlock Grid.Column="0" HorizontalAlignment="Stretch"
+                                                Text="{Binding Hue}"
+                                                ShowIcon="True" />
+                                        <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                        <Button Grid.Column="1" Padding="3,0,0,0"
+                                                Command="{Binding Data.SelectHueCommand, Source={StaticResource Proxy}}"
+                                                CommandParameter="{Binding}">
+                                            <Image Source="{DynamicResource ColorWheelIcon}" Height="12" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                <Button Content="{x:Static resources:Strings.Close}" Padding="25,5">
+                    <i:Interaction.Behaviors>
+                        <behaviours:CloseOnClickBehaviour />
+                    </i:Interaction.Behaviors>
+                </Button>
+            </StackPanel>
+
+        </Grid>
+    </Grid>
+</Window>

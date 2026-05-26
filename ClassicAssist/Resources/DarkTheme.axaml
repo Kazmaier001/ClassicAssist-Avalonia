@@ -1,0 +1,1551 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:caControls="clr-namespace:ClassicAssist.UI.Controls"
+        xmlns:primitives="clr-namespace:Avalonia.Controls.Primitives;assembly=Avalonia.Controls"
+        xmlns:headered="clr-namespace:ClassicAssist.Controls.Headered;assembly=ClassicAssist.Controls"
+        xmlns:caBehaviours="clr-namespace:ClassicAssist.UI.Misc.Behaviours"
+        xmlns:caShared="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls">
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/Icons.axaml" />
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/Colours.axaml" />
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/DarkTheme.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- ControlTheme — overrides FluentTheme's HeaderedContentControl
+                 template (which uses PART_HeaderPresenter + AccessText and has
+                 no header background bar or content border). Style-level
+                 Template setters lose to a ControlTheme; setting Theme to this
+                 resource makes our template win. -->
+            <!-- TextBox: FluentTheme's ControlTheme sets MinHeight=32 +
+                 Padding=10,6,6,5 (runtime dump 2026-05-20). Override via
+                 implicit ControlTheme keyed on TextBox type, BasedOn the
+                 FluentTheme default so all other states (focus, hover,
+                 disabled) keep working. -->
+<!-- Header toggle used inside HotkeyCategoryExpander. Separate ControlTheme
+                 so :checked / :pointerover styles can reach the chevron Path via a
+                 single /template/ hop (Avalonia disallows two hops in one selector). -->
+            <ControlTheme x:Key="HotkeyCategoryHeaderToggle" TargetType="ToggleButton">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="5,2" />
+                <Setter Property="Foreground" Value="#CCCCCC" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="Template">
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <StackPanel Orientation="Horizontal">
+                                <Grid Width="18" Height="18" Margin="0,0,6,0"
+                                      VerticalAlignment="Center">
+                                    <Ellipse Name="ChevronCircle" Width="18" Height="18"
+                                             Fill="#4B4B4B" />
+                                    <Path Name="ChevronPath"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Stretch="None"
+                                          Data="M 0,0 L 3.5,3.5 L 7,0"
+                                          Stroke="#CCCCCC" StrokeThickness="1.4"
+                                          StrokeLineCap="Round" StrokeJoin="Round"
+                                          RenderTransformOrigin="50%,50%" />
+                                </Grid>
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </ControlTemplate>
+                </Setter>
+                <Style Selector="^:checked /template/ Path#ChevronPath">
+                    <Setter Property="RenderTransform" Value="rotate(180deg)" />
+                </Style>
+                <Style Selector="^:pointerover /template/ Ellipse#ChevronCircle">
+                    <Setter Property="Fill" Value="#4426A0DA" />
+                </Style>
+                <Style Selector="^:pointerover /template/ Path#ChevronPath">
+                    <Setter Property="Stroke" Value="#FFFFFF" />
+                </Style>
+            </ControlTheme>
+
+            <!-- WPF-style Expander used by the Hotkeys tab category list. Replaces
+                 FluentTheme's chevron-style Expander template wholesale; chevron is
+                 a small filled triangle (collapsed right, expanded down). -->
+            <ControlTheme x:Key="HotkeyCategoryExpander" TargetType="Expander">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="#CCCCCC" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="Template">
+                    <ControlTemplate TargetType="Expander">
+                        <StackPanel>
+                            <ToggleButton Theme="{StaticResource HotkeyCategoryHeaderToggle}"
+                                          IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                          Content="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <ContentPresenter Name="PART_ContentPresenter"
+                                              IsVisible="{TemplateBinding IsExpanded}"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}" />
+                        </StackPanel>
+                    </ControlTemplate>
+                </Setter>
+            </ControlTheme>
+
+            <ControlTheme x:Key="{x:Type TextBox}" TargetType="TextBox"
+                          BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Padding" Value="4,1" />
+                <Setter Property="Background" Value="#333333" />
+                <Setter Property="Foreground" Value="#CCCCCC" />
+                <Setter Property="BorderBrush" Value="#4B4B4B" />
+                <!-- WPF: disabled TextBox renders with a dark fill
+                     (#272727) — the field reads as an inactive recessed
+                     block distinct from the surrounding #333333 controls.
+                     FluentTheme's default just dims via opacity, which
+                     looks like the box is still active. Match WPF. -->
+                <Style Selector="^:disabled /template/ Border#PART_BorderElement">
+                    <Setter Property="Background" Value="#272727" />
+                    <Setter Property="BorderBrush" Value="#4B4B4B" />
+                </Style>
+                <Style Selector="^:disabled">
+                    <Setter Property="Foreground" Value="#676767" />
+                </Style>
+                <!-- WPF doesn't tint or thicken the TextBox border on hover or focus —
+                     match by pinning brush + thickness across pointerover / focus /
+                     focus-within. -->
+                <Style Selector="^:pointerover /template/ Border#PART_BorderElement">
+                    <Setter Property="BorderBrush" Value="#4B4B4B" />
+                    <Setter Property="BorderThickness" Value="1" />
+                </Style>
+                <Style Selector="^:focus /template/ Border#PART_BorderElement">
+                    <Setter Property="BorderBrush" Value="#4B4B4B" />
+                    <Setter Property="BorderThickness" Value="1" />
+                </Style>
+                <Style Selector="^:focus-within /template/ Border#PART_BorderElement">
+                    <Setter Property="BorderBrush" Value="#4B4B4B" />
+                    <Setter Property="BorderThickness" Value="1" />
+                </Style>
+            </ControlTheme>
+
+            <!-- CheckBox: compact 13×13 box + X-mark glyph. Same FluentTheme
+                 ControlTheme trap as HeaderedContentControl — a Style with a
+                 Template setter was losing on the Options tab (FluentTheme's
+                 PART_Border + checkmark was rendering instead of our
+                 NormalRectangle + Path#CheckGlyph). Promote to implicit
+                 ControlTheme. -->
+            <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
+                <Setter Property="Padding" Value="4,0,0,0" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Foreground" Value="#CCCCCC" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center"
+                              Background="{TemplateBinding Background}">
+                            <Border Name="NormalRectangle" Grid.Column="0"
+                                    Width="13" Height="13"
+                                    BorderBrush="#808080" BorderThickness="1"
+                                    Background="Transparent"
+                                    VerticalAlignment="Center">
+                                <Path Name="CheckGlyph"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M 0,0 L 7,7 M 7,0 L 0,7"
+                                      Stroke="#CCCCCC" StrokeThickness="1.5"
+                                      StrokeLineCap="Round"
+                                      UseLayoutRounding="False"
+                                      Margin="1.6,0,0,0" />
+                            </Border>
+                            <ContentPresenter Name="PART_ContentPresenter" Grid.Column="1"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="Center"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter>
+                <Style Selector="^:unchecked /template/ Path#CheckGlyph">
+                    <Setter Property="IsVisible" Value="False" />
+                </Style>
+                <Style Selector="^:indeterminate /template/ Path#CheckGlyph">
+                    <Setter Property="IsVisible" Value="True" />
+                    <Setter Property="Opacity" Value="0.6" />
+                </Style>
+                <Style Selector="^:pointerover /template/ Border#NormalRectangle">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="#A0A0A0" />
+                </Style>
+            </ControlTheme>
+
+            <!-- RadioButton: mirror the CheckBox X-glyph styling so dialogs that
+                 use RadioButton for mutually-exclusive choices (e.g. NewProfile
+                 Blank/Duplicate) read as the project-wide X-checkbox look rather
+                 than FluentTheme's bullet-in-a-circle. Semantic behaviour is
+                 still RadioButton (mutual exclusion in the GroupName). -->
+            <ControlTheme x:Key="{x:Type RadioButton}" TargetType="RadioButton">
+                <Setter Property="Padding" Value="4,0,0,0" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Foreground" Value="#CCCCCC" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center"
+                              Background="{TemplateBinding Background}">
+                            <Border Name="NormalRectangle" Grid.Column="0"
+                                    Width="13" Height="13"
+                                    BorderBrush="#808080" BorderThickness="1"
+                                    Background="Transparent"
+                                    VerticalAlignment="Center">
+                                <Path Name="CheckGlyph"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M 0,0 L 7,7 M 7,0 L 0,7"
+                                      Stroke="#CCCCCC" StrokeThickness="1.5"
+                                      StrokeLineCap="Round"
+                                      UseLayoutRounding="False"
+                                      Margin="1.6,0,0,0" />
+                            </Border>
+                            <ContentPresenter Name="PART_ContentPresenter" Grid.Column="1"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="Center"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter>
+                <Style Selector="^:unchecked /template/ Path#CheckGlyph">
+                    <Setter Property="IsVisible" Value="False" />
+                </Style>
+                <Style Selector="^:pointerover /template/ Border#NormalRectangle">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="#A0A0A0" />
+                </Style>
+            </ControlTheme>
+
+            <!-- ButtonSpinner: hosts the up/down buttons inside NumericUpDown.
+                 WPF used xctk:IntegerUpDown — TextBox + narrow vertical
+                 spinner pair (~12 px) on the right. FluentTheme's default
+                 ButtonSpinner template stacks both RepeatButtons HORIZONTALLY
+                 at ~24 px each, so at QueueLastTarget Width="60" there's no
+                 room for the inner TextBox and the value disappears.
+
+                 An earlier attempt replaced NumericUpDown's template wholesale,
+                 but that drops the `Spinner` control NumericUpDown subscribes
+                 to for Spin events — so clicks didn't increment. Re-template
+                 the *ButtonSpinner* instead: it still raises Spin via the
+                 named PART_IncreaseButton / PART_DecreaseButton, and
+                 NumericUpDown's stock template wires PART_Spinner.Spin to
+                 Increase()/Decrease() for us. -->
+            <!-- NumericUpDown: custom implicit theme with our own template.
+                 The FluentTheme default sets Padding=10,6 on its inner
+                 TextBox via a nested ControlTheme style we can't reach
+                 from outside (BasedOn merging put their setter last), so
+                 the only reliable way to get a 22-px tall box that
+                 matches the Expire Targets row below is to provide our
+                 own template that wires up PART_TextBox with our padding.
+
+                 PART_Spinner is still a ButtonSpinner so NumericUpDown's
+                 base logic wires increment/decrement to the templated
+                 spinner buttons (PART_IncreaseButton / PART_DecreaseButton
+                 raise Spin → NumericUpDown.OnSpin → Increase()/Decrease()).
+                 PART_TextBox is our own TextBox with Padding=4,1 so the
+                 row height comes out to ~22 and the displayed value
+                 sits at the standard FontSize without squish. -->
+            <ControlTheme x:Key="{x:Type NumericUpDown}" TargetType="NumericUpDown">
+                <Setter Property="Background" Value="#333333" />
+                <Setter Property="Foreground" Value="#CCCCCC" />
+                <Setter Property="BorderBrush" Value="#4B4B4B" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="MinHeight" Value="22" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <!-- DataValidationErrors wrap dropped: no NumericUpDown in this
+                             codebase carries validation rules, and the wrapper consumes
+                             vertical space (top-border clipped + box grew when cleared).
+                             FluentTheme's default includes it; we don't need it. -->
+                        <ButtonSpinner Name="PART_Spinner"
+                                       Background="{TemplateBinding Background}"
+                                       BorderBrush="{TemplateBinding BorderBrush}"
+                                       BorderThickness="{TemplateBinding BorderThickness}"
+                                       IsTabStop="False">
+                            <TextBox Name="PART_TextBox"
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     Foreground="{TemplateBinding Foreground}"
+                                     Padding="4,1"
+                                     MinHeight="0" MinWidth="0"
+                                     VerticalContentAlignment="Center"
+                                     IsReadOnly="{TemplateBinding IsReadOnly}" />
+                        </ButtonSpinner>
+                    </ControlTemplate>
+                </Setter>
+            </ControlTheme>
+
+            <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner">
+                <Setter Property="Background" Value="#333333" />
+                <Setter Property="BorderBrush" Value="#4B4B4B" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Border Name="OuterBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <ContentPresenter Grid.Column="0"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              HorizontalContentAlignment="Stretch"
+                                              VerticalContentAlignment="Stretch" />
+                            <Grid Grid.Column="1" RowDefinitions="*,*" Width="14"
+                                  IsVisible="{TemplateBinding ShowButtonSpinner}">
+                                <RepeatButton Name="PART_IncreaseButton" Grid.Row="0"
+                                              BorderThickness="1,0,0,0"
+                                              Padding="0" Focusable="False"
+                                              HorizontalContentAlignment="Center"
+                                              VerticalContentAlignment="Center">
+                                    <Path Width="7" Height="4"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Fill="#CCCCCC" Data="M0,4 L3.5,0 L7,4 Z" />
+                                </RepeatButton>
+                                <RepeatButton Name="PART_DecreaseButton" Grid.Row="1"
+                                              BorderThickness="1,0,0,0"
+                                              Padding="0" Focusable="False"
+                                              HorizontalContentAlignment="Center"
+                                              VerticalContentAlignment="Center">
+                                    <Path Width="7" Height="4"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Fill="#CCCCCC" Data="M0,0 L3.5,4 L7,0 Z" />
+                                </RepeatButton>
+                            </Grid>
+                        </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter>
+                <Style Selector="^ /template/ RepeatButton">
+                    <Setter Property="Background" Value="#3F3F3F" />
+                    <Setter Property="BorderBrush" Value="#4B4B4B" />
+                    <!-- FluentTheme RepeatButton defaults to Left/Top
+                         alignment and shrinks to content (~8x5 here).
+                         Force Stretch so each half of the spinner fills
+                         its row in the 14-wide spinner column. -->
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="VerticalAlignment" Value="Stretch" />
+                    <Setter Property="MinWidth" Value="0" />
+                    <Setter Property="MinHeight" Value="0" />
+                </Style>
+                <!-- Disabled state on the wrapper Border. Use selectors
+                     rather than TemplateBindings so the :disabled override
+                     can win over the base values. -->
+                <Style Selector="^:disabled /template/ Border#OuterBorder">
+                    <Setter Property="Background" Value="#272727" />
+                    <Setter Property="BorderBrush" Value="#4B4B4B" />
+                </Style>
+                <Style Selector="^ /template/ RepeatButton:pointerover">
+                    <Setter Property="Background" Value="#4B4B4B" />
+                </Style>
+                <Style Selector="^ /template/ RepeatButton:pressed">
+                    <Setter Property="Background" Value="#5A5A5A" />
+                </Style>
+                <!-- Disabled: dissolve the buttons into the surrounding
+                     disabled fill so there's no orphaned vertical line
+                     where the spinner column used to live. -->
+                <Style Selector="^:disabled /template/ RepeatButton">
+                    <Setter Property="Background" Value="#272727" />
+                    <Setter Property="BorderBrush" Value="#272727" />
+                </Style>
+            </ControlTheme>
+
+
+            <ControlTheme x:Key="{x:Type primitives:HeaderedContentControl}"
+                          TargetType="HeaderedContentControl">
+                <Setter Property="BorderBrush" Value="#474747" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Foreground" Value="#CCCCCC" />
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Grid RowDefinitions="Auto,*">
+                            <Border Grid.Row="0"
+                                    Background="{TemplateBinding BorderBrush}"
+                                    HorizontalAlignment="Left">
+                                <ContentPresenter Content="{TemplateBinding Header}"
+                                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                                  Margin="8,3,8,3"
+                                                  TextBlock.Foreground="{TemplateBinding Foreground}" />
+                            </Border>
+                            <Border Grid.Row="1"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Margin="{TemplateBinding Padding}" />
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter>
+            </ControlTheme>
+
+            <!-- Fluent's default DataGridColumnHeader template wraps content in an inner
+                 Grid with 1*,Auto columns where the Auto column reserves ~32 DIP for the
+                 sort-glyph even with the Path collapsed (verified via TestHost
+                 inspect-vendor: ContentPresenter for "Color" in a 70-dip column was only
+                 24 DIP wide, with 32 DIP stranded). Re-template with a single
+                 ContentPresenter so the column's full inner width is available. -->
+            <ControlTheme x:Key="{x:Type DataGridColumnHeader}" TargetType="DataGridColumnHeader">
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+                <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}" />
+                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                <Setter Property="Padding" Value="4,0" />
+                <Setter Property="MinHeight" Value="22" />
+                <Setter Property="SeparatorBrush" Value="Transparent" />
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Border Name="HeaderBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid Name="PART_ColumnHeaderRoot">
+                                <ContentPresenter Name="PART_ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Margin="{TemplateBinding Padding}"
+                                                  HorizontalAlignment="Stretch"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                <Path Name="SortIcon" IsVisible="False" Width="0" Height="0" />
+                                <Rectangle Name="VerticalSeparator" Width="0" IsVisible="False" />
+                                <Thumb Name="PART_LeftHeaderGripper" HorizontalAlignment="Left"
+                                       Width="8" Background="Transparent" />
+                                <Thumb Name="PART_RightHeaderGripper" HorizontalAlignment="Right"
+                                       Width="8" Background="Transparent" />
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter>
+            </ControlTheme>
+        </ResourceDictionary>
+    </Styles.Resources>
+    <StyleInclude Source="avares://ClassicAssist.Controls/ClearableComboBox.axaml" />
+    <StyleInclude Source="avares://ClassicAssist.Controls/ImageButton.axaml" />
+
+    <!-- HeaderedContentControl mimicking WPF GroupBox (DarkTheme.xaml line 352):
+         left-aligned header bar in BorderBrush colour with a thin Padding, and a
+         bordered content area below. Avalonia has no built-in GroupBox; the
+         port uses HeaderedContentControl as the WPF<->Avalonia analogue. -->
+    <!-- Global default Foreground — matches WPF ThemeForegroundBrush
+         (#CCCCCC). FluentTheme leans bright-white; the WPF look is a soft
+         light gray on all primary controls. State-specific overrides below
+         (TabItem:selected, disabled, etc.) keep their distinct emphasis. -->
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <!-- TextBlock isn't templated, but it has the :disabled pseudoclass
+         (IsEffectivelyEnabled cascades from ancestors). WPF Label rendered
+         disabled text at a flat #676767 in this theme; FluentTheme's
+         default just lowers opacity which looks softer. Match WPF. -->
+    <Style Selector="TextBlock:disabled">
+        <Setter Property="Foreground" Value="#676767" />
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Label">
+        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="Label:disabled">
+        <Setter Property="Foreground" Value="#676767" />
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Button">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+        <!-- WPF ButtonBackgroundBrush = BackgroundColor5 = #333333.
+             FluentTheme defaults to a near-transparent neutral; mirror WPF. -->
+        <Setter Property="Background" Value="#333333" />
+        <Setter Property="BorderBrush" Value="#333333" />
+        <!-- WPF-matched padding: 10,5 keeps buttons readable in narrow Grid cells
+             (e.g. Dress bottom row splits a 150-dip column into ~70 dip per cell;
+             22,6 padding clipped 'Remove'/'New' text). Small icon buttons override
+             with Padding="0" locally. -->
+        <Setter Property="Padding" Value="5,5" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <!-- Match WPF: fill the parent cell/StackPanel horizontally. Buttons with an
+             explicit Width (e.g. 16-px icon buttons) are bounded by that width. -->
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Button /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+        <Setter Property="Background" Value="#333333" />
+        <Setter Property="BorderBrush" Value="#333333" />
+    </Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#333333" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+    </Style>
+    <Style Selector="Button:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="#4B4B4B" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+    </Style>
+    <Style Selector="CheckBox">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <!-- FluentTheme's CheckBox ControlTheme has state-specific Foreground
+         setters on the inner ContentPresenter (:unchecked/:checked/:pointerover/etc).
+         Same pattern as the TabItem FontSize gotcha — must mirror every state. -->
+    <Style Selector="CheckBox /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="CheckBox:unchecked /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="CheckBox:checked /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="CheckBox:indeterminate /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="CheckBox:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="CheckBox:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="TextBox">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+        <!-- WPF TextBox has MinWidth=0 by default; FluentTheme bumps it to
+             ~64, which silently overrode the explicit Width="40" boxes
+             beside "Limit Mouse Wheel Retrigger" / "Limit Hotkey Retrigger"
+             / "Use object queue", making them render about 60% too wide.
+             Reset so user-set Width values are honoured. -->
+        <Setter Property="MinWidth" Value="0" />
+    </Style>
+    <Style Selector="ToggleButton">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+
+    <!-- Style-based Template setter loses to FluentTheme's ControlTheme
+         (runtime dump 2026-05-20: HeaderedContentControl was rendering with
+         PART_HeaderPresenter + AccessText, i.e. the FluentTheme default).
+         Promote to a ControlTheme keyed on the type so we override
+         FluentTheme cleanly. -->
+    <Style Selector="HeaderedContentControl">
+        <Setter Property="BorderBrush" Value="#474747" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+
+    <!-- GridSplitter: matches WPF (DarkTheme.xaml line 1116). Solid
+         #4B4B4B (BackgroundColor6) full-height bar with a centered
+         3-wide × 30-tall grip formed by two 1-px vertical lines
+         (#292929 / BackgroundColor4) on its left and right edges,
+         transparent fill between. -->
+    <Style Selector="GridSplitter">
+        <Setter Property="Background" Value="#4B4B4B" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Width" Value="5" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}">
+                    <!-- Two explicit 1-px vertical Rectangles 1 px apart;
+                         BorderThickness on a 3-wide Border collapses the
+                         gap at fractional DPI so the grip looks solid. -->
+                    <Grid Width="3" Height="30"
+                          HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Rectangle Width="1" Height="30" Fill="#292929"
+                                   HorizontalAlignment="Left" />
+                        <Rectangle Width="1" Height="30" Fill="#292929"
+                                   HorizontalAlignment="Right" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- TextBlock default font size to match WPF -->
+    <Style Selector="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <!-- TabControl tab headers — measured against WPF: 11px cap height.
+         FluentTheme's TabItem ControlTheme has :selected / :pointerover setters that override
+         the base FontSize. Use a higher-specificity selector covering all states. -->
+    <Style Selector="TabItem">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Padding" Value="8,4" />
+    </Style>
+    <Style Selector="TabItem:selected">
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TabItem:pointerover">
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TabItem:focus">
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TabItem:focus-within">
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TabItem:disabled">
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <!-- WPF tab-folder effect: the selected tab header visually merges with the
+         content panel below via a shared border, like a manila folder tab.
+         Avalonia's FluentTheme uses an underline-pipe indicator instead, with
+         no border around the content. Reinstate the folder look by:
+           1. Overriding TabControl.Template to put a 1-px border around the
+              ContentPresenter, with no top border on the segment under the
+              selected tab so the seam is invisible (approximated by drawing the
+              top border of the content panel and relying on the selected
+              TabItem's background overlaying that seam).
+           2. Forcing each TabItem to render as a small bordered rectangle with
+              a slanted top-right corner and a transparent bottom edge when
+              selected, so the visual reads as a tab "attached" to the panel.
+         Colors mirror WPF: ThemeBorderBrush = #4B4B4B, ThemeBackgroundBrush = #1E1E1E. -->
+    <Style Selector="TabControl">
+        <!-- Unified panel + tab background (#2A2A2A) so the selected tab and
+             the content panel are the same color — the merge happens because
+             the selected tab's filled Background paints over the content
+             border's top edge underneath it. ItemsPresenter Margin pushes the
+             header row 1 px down into the content border so the selected tab
+             body covers that seam. -->
+        <Setter Property="Background" Value="#272727" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <!-- WPF-style balanced wrapping: single row when it fits,
+                         else split children across the smallest N rows that fit
+                         and stretch each row's tabs evenly across the width. -->
+                    <caControls:TabWrapPanel />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid RowDefinitions="Auto,*">
+                    <ItemsPresenter Name="PART_ItemsPresenter"
+                                    Grid.Row="0"
+                                    Margin="0,0,0,-1"
+                                    ZIndex="1"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}" />
+                    <Border Grid.Row="1"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="0,2,2,2">
+                        <ContentPresenter Name="PART_SelectedContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding SelectedContent}"
+                                          ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- TabItem: render as a small bordered rectangle. FluentTheme's default
+         template paints a colored bar under the selected tab; replace it.
+         Negative right margin makes adjacent tabs overlap (WPF folder-tab
+         layering). The Border inside the template gets a positive left edge
+         z-ordering so each tab's left border draws on top of the previous
+         tab's right edge. -->
+    <Style Selector="TabItem">
+        <!-- Negative right Margin on the TabItem itself (not the inner
+             Border) — Avalonia clips Border overhang in some configurations,
+             so attaching the overhang to the TabItem keeps the painted Border
+             intact. The slanted top-right corner (CornerRadius 12) cuts mass
+             out of the tab's upper-right, which makes a geometrically-centred
+             label look offset LEFT to the eye. Asymmetric Padding (more left
+             than right) shifts the centred content to the right to match the
+             visual centre of mass. -->
+        <Setter Property="Background" Value="#272727" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+        <Setter Property="BorderThickness" Value="1,1,1,1" />
+        <Setter Property="CornerRadius" Value="2,12,0,0" />
+        <Setter Property="Margin" Value="0,0,-4,0" />
+        <!-- Symmetric base padding; TabWrapPanel biases this asymmetrically
+             in wrap mode (proportional to per-tab stretch) so the slanted
+             top-right corner's visual pull is compensated only where the
+             tab is wide enough to need it. Single-row natural tabs keep
+             this symmetric padding and look centred. -->
+        <Setter Property="Padding" Value="15,3,15,3" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="ZIndex" Value="0" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="PART_LayoutRoot"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      Margin="{TemplateBinding Padding}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="TabItem:selected">
+        <Setter Property="Background" Value="#272727" />
+        <Setter Property="BorderThickness" Value="1,1,1,0" />
+        <Setter Property="ZIndex" Value="100" />
+    </Style>
+    <Style Selector="TabItem:pointerover">
+        <Setter Property="Background" Value="#272727" />
+    </Style>
+    <Style Selector="TabItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="#272727" />
+    </Style>
+    <Style Selector="TabItem:selected:pointerover">
+        <Setter Property="Background" Value="#272727" />
+    </Style>
+    <Style Selector="TabItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="#272727" />
+    </Style>
+    <!-- Hold the header foreground steady so hover doesn't brighten it. -->
+    <Style Selector="TabItem">
+        <Setter Property="Foreground" Value="#C4C4C4" />
+    </Style>
+    <Style Selector="TabItem:selected">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="TabItem:pointerover">
+        <Setter Property="Foreground" Value="#C4C4C4" />
+    </Style>
+    <Style Selector="TabItem:selected:pointerover">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="TabItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TabItem /template/ ContentPresenter">
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <!-- CheckBox check mark is drawn as Path#CheckGlyph (StreamGeometry inside a Viewbox).
+         FluentTheme sets Data via :checked state-specific setter, which beats our base selector.
+         Must use the same :checked selector to override. -->
+    <Style Selector="CheckBox /template/ Path#CheckGlyph">
+        <Setter Property="Data" Value="M 0,0 L 7,7 M 7,0 L 0,7" />
+        <Setter Property="Stroke" Value="#E8E8E8" />
+        <Setter Property="StrokeThickness" Value="1.5" />
+        <Setter Property="StrokeLineCap" Value="Round" />
+        <Setter Property="Fill" Value="{x:Null}" />
+    </Style>
+    <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
+        <Setter Property="Data" Value="M 0,0 L 7,7 M 7,0 L 0,7" />
+        <Setter Property="Stroke" Value="#E8E8E8" />
+        <Setter Property="StrokeThickness" Value="1.5" />
+        <Setter Property="StrokeLineCap" Value="Round" />
+        <Setter Property="Fill" Value="{x:Null}" />
+    </Style>
+    <Style Selector="CheckBox:indeterminate /template/ Path#CheckGlyph">
+        <Setter Property="Data" Value="M 0,0 L 7,7 M 7,0 L 0,7" />
+        <Setter Property="Stroke" Value="#E8E8E8" />
+        <Setter Property="StrokeThickness" Value="1.5" />
+        <Setter Property="Fill" Value="{x:Null}" />
+    </Style>
+
+    <!-- Shrink the actual checkbox box from 20x20 to 14x14, in every state -->
+    <Style Selector="CheckBox /template/ Border#NormalRectangle">
+        <Setter Property="Width" Value="13" />
+        <Setter Property="Height" Value="13" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#808080" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <!-- The Viewbox containing the glyph is also 20x20 by default — shrink so the X is
+         contained within the visible box border, not painted across the surrounding cell. -->
+    <Style Selector="CheckBox /template/ Viewbox">
+        <Setter Property="Width" Value="13" />
+        <Setter Property="Height" Value="13" />
+    </Style>
+    <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+        <Setter Property="Width" Value="13" />
+        <Setter Property="Height" Value="13" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#808080" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="CheckBox:unchecked /template/ Border#NormalRectangle">
+        <Setter Property="Width" Value="13" />
+        <Setter Property="Height" Value="13" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#808080" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="CheckBox:indeterminate /template/ Border#NormalRectangle">
+        <Setter Property="Width" Value="13" />
+        <Setter Property="Height" Value="13" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#808080" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="CheckBox:pointerover /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#A0A0A0" />
+    </Style>
+    <Style Selector="CheckBox:checked:pointerover /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#A0A0A0" />
+    </Style>
+
+    <!-- Tighter padding/min-height across inputs to match WPF density.
+         Runtime dump (2026-05-20) showed FluentTheme overriding to MinHeight=32
+         + Padding=10,6,6,5 on Options tab. Force the smaller values via
+         /template/ Border#PART_BorderElement so per-instance overrides aren't
+         needed. -->
+    <Style Selector="TextBox">
+        <Setter Property="Padding" Value="4,1" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Background" Value="#333333" />
+    </Style>
+    <Style Selector="TextBox /template/ Border#PART_BorderElement">
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="TextBox /template/ DockPanel">
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="TextBox /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="#333333" />
+    </Style>
+    <Style Selector="CheckBox">
+        <!-- 4 DIP — matches WPF DarkTheme.xaml CheckBox template's
+             ContentPresenter Margin="4,0,0,0". -->
+        <Setter Property="Padding" Value="4,0,0,0" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <!-- Verified by runtime visual-tree dump (TestHost inspect-checkbox flag,
+         2026-05-19): FluentTheme puts an explicit Height=32 on the unnamed
+         Grid inside Border#PART_Border (the 2-column box/content grid).
+         RootGrid and PART_Border themselves are Height=NaN, so they don't
+         show the bloat — the inner Grid is what we have to crush. -->
+    <!-- CheckBox template + state-specific Path/Border setters now live in
+         the implicit ControlTheme keyed {x:Type CheckBox} in Styles.Resources
+         above. A Style with a Template setter was losing on Options tab. -->
+
+    <!-- ToolTip chrome to match WPF: rounded corners + visible border.
+         FluentTheme's default ToolTip background looks bare; mirror the WPF
+         "panel with thin gray border" look across the app. -->
+    <Style Selector="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource ThemeWindowBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Padding" Value="6" />
+    </Style>
+
+    <!-- Match WPF TreeViewBackgroundBrush (#151515 / BackgroundColor1) and
+         reserve always-visible scrollbar space — FluentTheme overlays the
+         scrollbar by default which makes the list look paddingless on the
+         right edge until you hover. Same pattern as the code editor. -->
+    <Style Selector="TreeView">
+        <Setter Property="Background" Value="#151515" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <!-- Verified by TestHost inspect-tree (2026-05-19): Avalonia's
+             FluentTheme ScrollViewer template lays the ScrollContentPresenter
+             and ScrollBar in the same Grid cell (overlay mode), so items
+             render under the bar. Right-Padding pushes content inward by
+             scrollbar width to clear the overlap. -->
+        <Setter Property="Padding" Value="0,0,18,0" />
+    </Style>
+    <Style Selector="TreeView ScrollViewer">
+        <Setter Property="AllowAutoHide" Value="False" />
+    </Style>
+    <Style Selector="TreeView ScrollBar">
+        <Setter Property="AllowAutoHide" Value="False" />
+    </Style>
+    <!-- DataGrid's internal ScrollViewer uses Fluent's auto-hide scrollbars,
+         which collapse to a 1-px hairline until hovered. Other tabs use TreeView
+         (which already overrides AllowAutoHide above). Match the visible WPF
+         scrollbar so DataGrids look consistent with the rest of the UI. -->
+    <Style Selector="DataGrid ScrollBar">
+        <Setter Property="AllowAutoHide" Value="False" />
+    </Style>
+    <Style Selector="ScrollViewer ScrollBar">
+        <Setter Property="AllowAutoHide" Value="False" />
+    </Style>
+    <!-- WPF-matched ScrollBar dimensions in DEVICE pixels: 22-px bar,
+         12-px thumb, 12x7 triangles. At 125% DPI Avalonia upscales DIPs
+         by ~1.25x, so DIP values are device/1.25. -->
+    <Style Selector="ScrollBar:vertical">
+        <Setter Property="Width" Value="17" />
+        <Setter Property="MinWidth" Value="17" />
+    </Style>
+    <Style Selector="ScrollBar:horizontal">
+        <Setter Property="Height" Value="17" />
+        <Setter Property="MinHeight" Value="17" />
+    </Style>
+    <Style Selector="ScrollBar:vertical /template/ Thumb">
+        <Setter Property="Width" Value="9" />
+        <Setter Property="MinWidth" Value="9" />
+        <Setter Property="MaxWidth" Value="9" />
+    </Style>
+    <Style Selector="ScrollBar:horizontal /template/ Thumb">
+        <Setter Property="Height" Value="9" />
+        <Setter Property="MinHeight" Value="9" />
+        <Setter Property="MaxHeight" Value="9" />
+    </Style>
+    <!-- Replace FluentTheme's chevron arrow glyphs (PathIcon inside the line
+         buttons) with filled WPF-style triangles. Verified via TestHost
+         inspect-tree (2026-05-19): each line RepeatButton holds a PathIcon. -->
+    <Style Selector="ScrollBar:vertical /template/ RepeatButton#PART_LineUpButton PathIcon">
+        <Setter Property="Data" Value="M 0,5 L 9,5 L 4.5,0 Z" />
+        <Setter Property="Width" Value="9" />
+        <Setter Property="Height" Value="5" />
+    </Style>
+    <Style Selector="ScrollBar:vertical /template/ RepeatButton#PART_LineDownButton PathIcon">
+        <Setter Property="Data" Value="M 0,0 L 9,0 L 4.5,5 Z" />
+        <Setter Property="Width" Value="9" />
+        <Setter Property="Height" Value="5" />
+    </Style>
+    <Style Selector="ScrollBar:horizontal /template/ RepeatButton#PART_LineUpButton PathIcon">
+        <Setter Property="Data" Value="M 5,0 L 5,9 L 0,4.5 Z" />
+        <Setter Property="Width" Value="5" />
+        <Setter Property="Height" Value="9" />
+    </Style>
+    <Style Selector="ScrollBar:horizontal /template/ RepeatButton#PART_LineDownButton PathIcon">
+        <Setter Property="Data" Value="M 0,0 L 0,9 L 5,4.5 Z" />
+        <Setter Property="Width" Value="5" />
+        <Setter Property="Height" Value="9" />
+    </Style>
+    <!-- ScrollBar arrows and thumb colour: #626262 (WPF reference). -->
+    <Style Selector="ScrollBar /template/ RepeatButton PathIcon">
+        <Setter Property="Foreground" Value="#626262" />
+    </Style>
+    <Style Selector="ScrollBar /template/ Thumb">
+        <Setter Property="Background" Value="#626262" />
+    </Style>
+    <!-- Thumb's visible fill comes from Border#thumb (or unnamed Border)
+         inside its own template. FluentTheme sets that to #33ffffff
+         (translucent white). Chained /template/ selectors don't work in
+         Avalonia, so target Thumb's template Border directly. Verified
+         via TestHost inspect-tree dump. -->
+    <Style Selector="Thumb /template/ Border">
+        <Setter Property="Background" Value="#626262" />
+        <Setter Property="BorderBrush" Value="#626262" />
+    </Style>
+    <Style Selector="Thumb:pointerover /template/ Border">
+        <Setter Property="Background" Value="#737373" />
+    </Style>
+    <Style Selector="Thumb:pressed /template/ Border">
+        <Setter Property="Background" Value="#7C7C7C" />
+    </Style>
+
+    <Style Selector="TreeViewItem">
+        <Setter Property="Padding" Value="5,2" />
+        <Setter Property="MinHeight" Value="0" />
+        <!-- BorderThickness=1 in every state so PART_LayoutRoot reserves the
+             1-DIP slot in idle / hover too (not just :selected). The visible
+             border comes from BorderBrush, which is Transparent until :selected
+             flips it to gray/blue. No layout shift between any states. -->
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#CCCCCC" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <!-- Kill FluentTheme's state-change transitions; their brush
+             interpolation causes subpixel text-hinting flicker during
+             hover even when layout bounds are byte-identical. -->
+        <Setter Property="Transitions" Value="{x:Null}" />
+    </Style>
+    <Style Selector="TreeViewItem:pointerover">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <!-- Selected items get the visible accent/gray frame. Border#PART_LayoutRoot
+         TemplateBinds its BorderThickness to the TVI's, so we set BT=1 here and
+         the inner Border picks up the brush we paint via the :selected /template/
+         rules below. Yes, selecting an item causes a 1-DIP layout shift (the
+         border consumes 1 DIP of inner space); that's a deliberate state change
+         on click, not an incidental hover artifact. -->
+    <Style Selector="TreeViewItem:selected">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="TreeViewItem:selected:pointerover">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot">
+        <Setter Property="Transitions" Value="{x:Null}" />
+    </Style>
+    <!-- 2px outer margin on all sides so the selected box doesn't touch the TreeView's outer border -->
+    <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot">
+        <Setter Property="Margin" Value="2" />
+    </Style>
+    <Style Selector="TreeViewItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Margin" Value="2" />
+    </Style>
+    <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+        <Setter Property="Margin" Value="2" />
+    </Style>
+    <Style Selector="TreeViewItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Margin" Value="2" />
+    </Style>
+    <!-- Collapse the chevron column for leaf items only: macro names sat ~12px shifted
+         right because the template reserves space for an expand/collapse chevron. Scoped
+         with :empty so categories (Hotkeys tab) still show their expand chevron. -->
+    <Style Selector="TreeViewItem:empty /template/ Panel#PART_ExpandCollapseChevronContainer">
+        <Setter Property="Width" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <!-- Strip the FluentTheme default blue outline around every TreeViewItem and make
+         selection a subtle dark fill instead of a solid accent block.
+
+         Note (2026-05-21): Border#PART_LayoutRoot.BorderThickness is
+         TemplateBound to TreeViewItem.BorderThickness in Fluent's ControlTheme.
+         The TVI starts at BorderThickness=0 (our base style at line 902) and
+         STAYS at 0 across all pseudo-states unless we explicitly set it to
+         something else somewhere — Fluent itself does NOT flip BT=1 on hover.
+         A previous attempt that added `BorderThickness="1"` setters to
+         :pointerover / :selected propagated through the TemplateBinding to
+         PART_LayoutRoot and shifted the inner Grid#PART_Header by 1 DIP on
+         hover, which read as the text glyph jumping horizontally. Verified
+         via TestHost inspect-macros-hover flag. -->
+    <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <!-- Hover (any). Border thickness now grows to 1 via Fluent's TemplateBinding,
+         so cancel the idle Padding=1 to keep the inner offset identical. The
+         BorderBrush stays Transparent so no visible indicator appears (matches
+         WPF Macros tab — hovered-unselected items stay completely flat). -->
+    <Style Selector="TreeViewItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="TreeViewItem:empty:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <!-- Inactive selection (TreeView does not have focus within): gray,
+         matching the WPF MultiTrigger (IsSelected=True, IsKeyboardFocused=False).
+         Fluent's :selected sets PART_LayoutRoot.BorderThickness to 1 via
+         TemplateBinding, so Padding=0 here to keep the inner offset = 1 DIP. -->
+    <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="#4B4B4B" />
+        <Setter Property="BorderBrush" Value="#C4C4C4" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="TreeViewItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="#4B4B4B" />
+        <Setter Property="BorderBrush" Value="#C4C4C4" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <!-- Active selection (TreeView has keyboard focus within): blue accent. -->
+    <Style Selector="TreeView:tree-focused TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="#1B3A52" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="TreeView:tree-focused TreeViewItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="#1B3A52" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <!-- Drop-target highlight during drag-and-drop: rounded gray outline on
+         whichever TreeViewItem the pointer is currently over. Wins over the
+         :selected / :tree-focused paint by virtue of being listed last. -->
+    <Style Selector="TreeViewItem:drag-over /template/ Border#PART_LayoutRoot">
+        <Setter Property="BorderBrush" Value="#C4C4C4" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="2,1" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+
+    <Style Selector="Expander.hotkey-category">
+        <Setter Property="Theme" Value="{StaticResource HotkeyCategoryExpander}" />
+    </Style>
+
+    <!-- Hotkeys tab: WPF-style hover (blue border + faint blue tint) + selection on
+         leaf ListBoxItems inside the category Expander. Scoped via parent class so
+         this doesn't bleed into other ListBoxes in the app. -->
+    <Style Selector="Expander.hotkey-category ListBoxItem">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="2,1" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Transitions" Value="{x:Null}" />
+    </Style>
+    <Style Selector="Expander.hotkey-category ListBoxItem /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="2,1" />
+        <Setter Property="Transitions" Value="{x:Null}" />
+    </Style>
+    <Style Selector="Expander.hotkey-category ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#1426A0DA" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Expander.hotkey-category ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="#1B3A52" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Expander.hotkey-category ListBoxItem:selected:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#1B3A52" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+    </Style>
+
+    <!-- Disabled Button styling to match WPF DarkTheme.xaml. WPF applied its
+         standard "disabled" treatment which dims the entire control including
+         child images / icons (Opacity propagates). FluentTheme in Avalonia
+         keeps disabled controls at full opacity, leaving icon buttons
+         looking too prominent. Mirror the brush colours and reduce Opacity
+         on the whole control so child Image elements fade too. -->
+    <!-- Disabled button: WPF uses #292929 against a #151515 panel — a clear
+         step lighter than the panel. Our tab panel is #2A2A2A (FluentTheme
+         port), so #292929 would merge. Lift to #383838 to preserve the
+         "subtle but visible" contrast the WPF version had. -->
+    <Style Selector="Button:disabled">
+        <Setter Property="Background" Value="#292929" />
+        <Setter Property="BorderBrush" Value="#292929" />
+        <Setter Property="Foreground" Value="#8A8A8A" />
+        <Setter Property="Opacity" Value="0.55" />
+    </Style>
+    <Style Selector="Button:disabled /template/ ContentPresenter">
+        <Setter Property="Background" Value="#292929" />
+        <Setter Property="BorderBrush" Value="#292929" />
+        <Setter Property="Foreground" Value="#8A8A8A" />
+    </Style>
+
+    <!-- HorizontalHeaderedContentControl template is set programmatically
+         in its static ctor — see HorizontalHeaderedContentControl.xaml.cs.
+         A Style-based template here didn't take in practice. -->
+
+
+    <!-- TextBox focused/hovered fill matches WPF (#292929 = BackgroundColor4),
+         one step darker than the unfocused #333333. -->
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="#292929" />
+    </Style>
+    <Style Selector="TextBox:focus">
+        <Setter Property="Background" Value="#292929" />
+    </Style>
+    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="#292929" />
+    </Style>
+    <Style Selector="TextBox:pointerover">
+        <Setter Property="Background" Value="#292929" />
+    </Style>
+
+    <!-- ComboBox: WPF ComboBoxBackgroundBrush = #333333 (BackgroundColor5).
+         Border + hover fill both #4B4B4B (BackgroundColor6) — matches WPF. -->
+    <Style Selector="ComboBox">
+        <Setter Property="Background" Value="#333333" />
+        <Setter Property="Foreground" Value="#CCCCCC" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="ComboBox /template/ Border#Background">
+        <Setter Property="Background" Value="#333333" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="ComboBox:pointerover /template/ Border#Background">
+        <Setter Property="Background" Value="#4B4B4B" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+    </Style>
+    <Style Selector="ComboBox:pressed /template/ Border#Background">
+        <Setter Property="Background" Value="#4B4B4B" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+    </Style>
+    <Style Selector="ComboBox:disabled /template/ Border#Background">
+        <Setter Property="Background" Value="#272727" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+    </Style>
+    <!-- Dropdown-list items: WPF look.
+           selected (idle)      → blue border + translucent blue fill
+           selected + hover     → blue border + slightly deeper blue fill
+           unselected + hover   → neutral grey border + grey fill
+         FluentTheme's :pointerover for ComboBoxItem applies the accent
+         brush, which without overrides makes hovered rows look "selected"
+         (inverting the hierarchy). We set Background/BorderBrush both on
+         the ComboBoxItem itself AND on the template's named
+         PART_ContentPresenter — Fluent's template TemplateBinds the
+         ContentPresenter's Background to the item, so setting the item
+         alone is sometimes lost when Fluent's own :pointerover style sets
+         the ContentPresenter Background directly. Belt + braces. -->
+    <Style Selector="ComboBoxItem">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="ComboBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="ComboBoxItem:selected">
+        <Setter Property="Background" Value="#1B3A52" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+    </Style>
+    <Style Selector="ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#1B3A52" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+    </Style>
+    <Style Selector="ComboBoxItem:selected:focus /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#1B3A52" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+    </Style>
+    <Style Selector="ComboBoxItem:selected:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#1B3A52" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+    </Style>
+    <Style Selector="ComboBoxItem:selected:pointerover">
+        <Setter Property="Background" Value="#274C66" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+    </Style>
+    <Style Selector="ComboBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#274C66" />
+        <Setter Property="BorderBrush" Value="#26A0DA" />
+    </Style>
+
+    <!-- Unselected pointer-over — must NOT use accent. Grey-on-grey. -->
+    <Style Selector="ComboBoxItem:pointerover">
+        <Setter Property="Background" Value="#3F3F3F" />
+        <Setter Property="BorderBrush" Value="#5A5A5A" />
+    </Style>
+    <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#3F3F3F" />
+        <Setter Property="BorderBrush" Value="#5A5A5A" />
+    </Style>
+    <Style Selector="ComboBoxItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#3F3F3F" />
+        <Setter Property="BorderBrush" Value="#5A5A5A" />
+    </Style>
+    <!-- FluentTheme ComboBox sits on Padding="11,5,30,7" — visibly more
+         left padding than the WPF reference. Trim left+vertical so the
+         selected-item text aligns with TextBox/CheckBox text in the same
+         column, and lower the row height to ~24 px. The right padding
+         stays larger to leave room for the toggle glyph. -->
+    <Style Selector="ComboBox">
+        <Setter Property="Padding" Value="6,3,24,4" />
+        <Setter Property="MinHeight" Value="24" />
+        <!-- Cap dropdown height so long lists (e.g. Public Macros authors)
+             stay within the window. FluentTheme default is 504 DIP which
+             overflows small windows and forces the popup to flip up. The
+             popup's built-in ScrollViewer kicks in past this cap and
+             inherits the global ScrollBar styling (see ScrollBar styles
+             above). -->
+        <Setter Property="MaxDropDownHeight" Value="300" />
+        <!-- Disable virtualization in the dropdown so all items are
+             measured up front and the popup sizes to the widest item
+             from the start. With FluentTheme's default
+             VirtualizingStackPanel, items only measure when scrolled
+             into view, which makes the popup width "jump" as a long
+             entry virtualizes in. -->
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel />
+            </ItemsPanelTemplate>
+        </Setter>
+    </Style>
+    <!-- The dropdown list items use the same right padding for their
+         toggle area in FluentTheme; for plain items we want the text
+         to start near the left edge to match the closed-state padding. -->
+    <Style Selector="ComboBoxItem">
+        <Setter Property="Padding" Value="6,2,6,2" />
+        <Setter Property="MinHeight" Value="22" />
+    </Style>
+
+    <!-- NumericUpDown: brushes only. Template is FluentTheme's stock
+         NumericUpDown which embeds a ButtonSpinner — we re-template the
+         ButtonSpinner above (in Styles.Resources) to get a narrow vertical
+         spinner column, while keeping NumericUpDown's own Spin event wiring. -->
+    <!-- Disabled: FluentTheme drops Opacity on the whole control which
+         makes the outer border read as washed-out / invisible against
+         the surrounding panel, and the inner spinner-button left edge
+         shows up as an orphaned vertical line because nothing else is
+         drawn at full opacity. Force the brushes explicitly and reset
+         Opacity so the box reads as a flat disabled rectangle. -->
+    <Style Selector="NumericUpDown:disabled">
+        <Setter Property="Background" Value="#272727" />
+        <Setter Property="BorderBrush" Value="#4B4B4B" />
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="NumericUpDown:disabled /template/ TextBox">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#676767" />
+    </Style>
+    <!-- NumericUpDown hosts a full TextBox whose own PART_BorderElement
+         draws a stroke around the textbox half only — combined with our
+         new outer ButtonSpinner border that looked like an extra inner
+         rectangle. Hide the inner border so only the outer one shows. -->
+    <Style Selector="NumericUpDown /template/ TextBox /template/ Border#PART_BorderElement">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <!-- The inner TextBox inherits FluentTheme's 10,6 padding (visible
+         as 9.6 left + 6.4 top whitespace in the visual-tree dump),
+         pushing the NumericUpDown to ~29 px tall — taller than the
+         bare "Expire Targets" TextBox row (22 px). Our generic TextBox
+         ControlTheme's Padding=4,1 setter is overridden by something
+         specific to NumericUpDown's inner TextBox, so target it
+         directly here. -->
+    <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox">
+        <Setter Property="Padding" Value="4,1" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+
+    <!-- Slider: WPF-style horizontal slider — thin #4B4B4B track + small
+         rectangular thumb. FluentTheme's default uses a fat accent-coloured
+         track and a circular thumb that read as out-of-place in the dark
+         theme. Track part name PART_Track is required by Avalonia. -->
+    <Style Selector="Slider:horizontal">
+        <Setter Property="MinHeight" Value="20" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid VerticalAlignment="Center">
+                    <Border Height="4" Background="#4B4B4B" BorderBrush="#4B4B4B"
+                            BorderThickness="1" VerticalAlignment="Center" Margin="5,0" />
+                    <Track Name="PART_Track" Orientation="Horizontal"
+                           Minimum="{TemplateBinding Minimum}"
+                           Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}"
+                           IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+                        <Track.DecreaseButton>
+                            <RepeatButton Name="PART_DecreaseButton" Background="Transparent"
+                                          Focusable="False" BorderThickness="0">
+                                <RepeatButton.Template>
+                                    <ControlTemplate>
+                                        <Border Background="Transparent" />
+                                    </ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                        </Track.DecreaseButton>
+                        <Track.IncreaseButton>
+                            <RepeatButton Name="PART_IncreaseButton" Background="Transparent"
+                                          Focusable="False" BorderThickness="0">
+                                <RepeatButton.Template>
+                                    <ControlTemplate>
+                                        <Border Background="Transparent" />
+                                    </ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                        </Track.IncreaseButton>
+                        <Thumb Name="thumb" Width="11" Height="18"
+                               Background="#4B4B4B" BorderBrush="#4B4B4B" BorderThickness="1">
+                            <Thumb.Template>
+                                <ControlTemplate>
+                                    <Border Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}" />
+                                </ControlTemplate>
+                            </Thumb.Template>
+                        </Thumb>
+                    </Track>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="DataGrid">
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="GridLinesVisibility" Value="None" />
+        <Setter Property="HeadersVisibility" Value="Column" />
+        <Setter Property="Background" Value="#151515" />
+        <Setter Property="RowBackground" Value="#151515" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource ThemeBorderBrush}" />
+        <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource ThemeBorderBrush}" />
+        <!-- Toggle "hasvbar" class on vertical-scrollbar visibility so the
+             row selection rectangle margin (see styles below) reserves space
+             only when the bar is actually present. -->
+        <Setter Property="caBehaviours:DataGridScrollBarReservation.ReserveSpace" Value="True" />
+    </Style>
+    <Style Selector="DataGrid /template/ Rectangle#PART_ColumnHeadersAndRowsSeparator">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <!-- DataGridRow selection / hover to match WPF: translucent blue + accent
+         border on selected rows, lighter translucent blue + accent border on
+         hovered unselected rows. FluentTheme paints the accent solid on
+         :selected which is too saturated next to the macros tab list. Mirror
+         the colour family we already use for ComboBoxItem / TreeViewItem
+         active selection. -->
+    <Style Selector="DataGridRow">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <!-- Selection / hover rectangle defaults to full row width. When the host
+         DataGrid is tagged with the "hasvbar" class (set from code-behind
+         whenever PART_VerticalScrollbar.IsVisible flips true — see e.g.
+         ItemIDFilterConfigureWindow.HookDataGridScrollBarMargin), the
+         rightmost 17 DIP are reserved so the highlight doesn't paint under
+         the scrollbar overlay. 17 matches the ScrollBar:vertical Width set
+         globally above. -->
+    <Style Selector="DataGridRow /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Fill" Value="#1426A0DA" />
+        <Setter Property="Stroke" Value="#26A0DA" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Fill" Value="#1B3A52" />
+        <Setter Property="Stroke" Value="#26A0DA" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="DataGridRow:selected:pointerover /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Fill" Value="#274C66" />
+        <Setter Property="Stroke" Value="#26A0DA" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <!-- hasvbar variants: reserve 17 DIP for the vertical scrollbar overlay. -->
+    <Style Selector="DataGrid.hasvbar DataGridRow /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Margin" Value="0,0,20,0" />
+    </Style>
+    <Style Selector="DataGrid.hasvbar DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Margin" Value="0,0,20,0" />
+    </Style>
+    <Style Selector="DataGrid.hasvbar DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Margin" Value="0,0,20,0" />
+    </Style>
+    <Style Selector="DataGrid.hasvbar DataGridRow:selected:pointerover /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Margin" Value="0,0,20,0" />
+    </Style>
+
+    <!-- Avalonia DataGridCell shows a focus rectangle when clicked, which has
+         no analogue in the WPF version (it used ListView+GridView with
+         row-level selection only). Suppress the cell-level focus visual so
+         only row selection appears. -->
+    <Style Selector="DataGridCell">
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <!-- Cell content stretches to fill the column instead of auto-sizing to its
+             desired width. Without this, templates whose root has HorizontalAlignment=
+             Stretch (e.g. EditTextBlock with * + Auto inner grid) shrink to their text
+             width, defeating layouts that expect to fill the cell. -->
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="DataGridCell:focus /template/ Grid#FocusVisual">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="DataGridCell:current /template/ Grid#FocusVisual">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <!-- Center bare CheckBoxes that live as the leaf of a DataGridCell template
+         (the common "✓" column pattern across Scavenger / VendorBuy / VendorSell /
+         NameOverride / ItemIDFilter / SoundFilter / ClilocFilter / ScreenshotMobile,
+         etc.). Without this each CheckBox's box hugs the cell's left edge instead
+         of sitting under its checkmark header. Cells that wrap a CheckBox in a
+         StackPanel or other layout opt out automatically (the alignment lives on
+         the wrapper, not the CheckBox). -->
+    <Style Selector="DataGridCell CheckBox">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- EditTextBlock cells fill the column (cell HCA=Stretch above), which puts
+         the pencil button hard against the next column's left edge. A small right
+         margin keeps the pencil visually separated from neighbouring cell content
+         without affecting standalone (non-cell) EditTextBlock placements. -->
+    <Style Selector="DataGridCell caShared|EditTextBlock">
+        <Setter Property="Margin" Value="0,0,6,0" />
+    </Style>
+
+    <!-- Default UO icon on every secondary Window. Avalonia's Window has no
+         icon-inheritance from the host process (unlike WPF, which inherits
+         from the entry assembly). Apply globally via type selector; individual
+         windows can override with their own Icon="…" attribute. -->
+    <Style Selector="Window">
+        <Setter Property="Icon" Value="avares://ClassicAssist/Resources/uo.ico" />
+    </Style>
+
+    <!-- MsBox.Avalonia uses a TextBox (named ContentTextBox) to host the message,
+         which inherits our TextBox theming and FluentTheme's :pointerover border
+         highlight — creating a visible rectangle around the text on mouse hover.
+         Flatten the chrome and centre the text vertically for a cleaner look. -->
+    <Style Selector="TextBox#ContentTextBox">
+        <!-- VerticalAlignment centres the TextBox in MsBox 3.3.x's outer ScrollViewer slot;
+             VerticalContentAlignment centres the text inside the TextBox. Need both. -->
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="TextBox#ContentTextBox:pointerover">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="TextBox#ContentTextBox:focus">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+    </Style>
+    <Style Selector="TextBox#ContentTextBox /template/ Border#PART_BorderElement">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="TextBox#ContentTextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="TextBox#ContentTextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!-- Global "chunky" OK/Cancel dialog buttons. Mark the bottom-row
+         container with Classes="dialog-buttons" and every direct Button
+         child gets the WPF-reference padding + min-width. Each dialog
+         handles its own inter-button spacing (StackPanel Margin / first-
+         button Margin) so we don't accidentally double-space layouts. -->
+    <Style Selector=".dialog-buttons > Button">
+        <Setter Property="Padding" Value="20,5" />
+        <Setter Property="MinWidth" Value="80" />
+    </Style>
+</Styles>

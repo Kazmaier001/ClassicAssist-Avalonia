@@ -1,0 +1,92 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels"
+    xmlns:ValueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+    xmlns:System="clr-namespace:System;assembly=System.Runtime"
+    xmlns:controls="clr-namespace:ClassicAssist.UI.Controls"
+    x:Class="ClassicAssist.UI.Views.NewProfileWindow" x:Name="window"
+    Background="{DynamicResource ThemeWindowBackgroundBrush}"
+    Title="{x:Static resources:Strings.New_Profile}" Width="350" SizeToContent="Height"
+    WindowStartupLocation="CenterOwner" SystemDecorations="None">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ValueConverters:EnumMatchToBooleanConverter x:Key="EnumMatchToBooleanConverter" />
+            <viewModels:NewProfileViewModel x:Key="DummyData">
+                <viewModels:NewProfileViewModel.Profiles>
+                    <System:String>fake1.json</System:String>
+                    <System:String>fake2.json</System:String>
+                    <System:String>fake3.json</System:String>
+                </viewModels:NewProfileViewModel.Profiles>
+            </viewModels:NewProfileViewModel>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+    </Window.Styles>
+    <Window.DataContext>
+        <viewModels:NewProfileViewModel />
+    </Window.DataContext>
+    <DockPanel>
+    <controls:CustomWindowTitleControl DockPanel.Dock="Top"
+                                       CustomTitle="{Binding Title, ElementName=window}"
+                                       CanClose="True" CanMinimize="False" CanMaximize="False" />
+    <Border Margin="10" BorderBrush="{StaticResource ThemeBorderBrush}"
+            Background="{StaticResource ThemeInnerControlBackgroundBrush}"
+            BorderThickness="1" d:DataContext="{StaticResource DummyData}">
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Static resources:Strings.Name_}" Grid.Column="0" VerticalAlignment="Center" />
+                <TextBox Text="{Binding Name, Mode=TwoWay}" Margin="5,0,0,0"
+                         Grid.Column="1" />
+            </Grid>
+            <Grid Grid.Row="1" Margin="0,10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Grid.Row="0">
+                    <RadioButton Content="{x:Static resources:Strings.Blank}" Margin="0,0,10,0"
+                                 IsChecked="{Binding Option, ConverterParameter=Blank, Converter={StaticResource EnumMatchToBooleanConverter}}" />
+                    <RadioButton Content="{x:Static resources:Strings.Duplicate}"
+                                 IsChecked="{Binding Option, ConverterParameter=Duplicate, Converter={StaticResource EnumMatchToBooleanConverter}}" />
+                </StackPanel>
+                <ComboBox Grid.Row="1" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}"
+                          Margin="0,10,0,0" HorizontalAlignment="Stretch"
+                          IsVisible="{Binding Option, Converter={StaticResource EnumMatchToBooleanConverter}, ConverterParameter=Duplicate}" />
+            </Grid>
+            <StackPanel Classes="dialog-buttons" Orientation="Horizontal" Grid.Row="2"
+                        HorizontalAlignment="Right">
+                <StackPanel.Styles>
+                    <Style Selector="Button">
+                        <Setter Property="Margin" Value="5,0,0,0" />
+                    </Style>
+                </StackPanel.Styles>
+                <Button Content="{x:Static resources:Strings.OK}" Command="{Binding OKCommand}">
+                    <i:Interaction.Behaviors>
+                        <behaviours:CloseOnClickBehaviour />
+                    </i:Interaction.Behaviors>
+                </Button>
+                <Button Content="{x:Static resources:Strings.Cancel}">
+                    <i:Interaction.Behaviors>
+                        <behaviours:CloseOnClickBehaviour />
+                    </i:Interaction.Behaviors>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+    </DockPanel>
+</Window>

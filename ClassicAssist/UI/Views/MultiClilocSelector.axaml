@@ -1,0 +1,47 @@
+<UserControl x:Name="userControl" x:Class="ClassicAssist.UI.Views.MultiClilocSelector"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ClassicAssist.UI.Views"
+             xmlns:misc="clr-namespace:ClassicAssist.Misc"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters" d:DesignWidth="600">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <valueConverters:ClilocValueConverter x:Key="ClilocValueConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <!-- ReSharper disable once Xaml.BindingWithoutContextNotResolved -->
+    <controls:MultiValueSelector Values="{Binding Values}" PopupWidth="400">
+        <controls:MultiValueSelector.Buttons>
+            <StackPanel Orientation="Horizontal">
+                <!-- Buttons content is hosted inside MultiValueSelector's
+                     Popup (separate visual tree, separate NameScope) so the
+                     Commands are wired in code-behind, not XAML. -->
+                <controls:ImageButton x:Name="ChooseClilocButton"
+                                      ImageSource="{StaticResource ExportIcon}" Margin="5,0,0,0"
+                                      ToolTip.Tip="{x:Static resources:Strings.Choose_by_Cliloc}" />
+                <controls:ImageButton x:Name="ChooseFromItemButton"
+                                      ImageSource="{StaticResource CrosshairIcon}" Margin="5,0,0,0"
+                                      ToolTip.Tip="{x:Static resources:Strings.Choose_from_Item}" />
+            </StackPanel>
+        </controls:MultiValueSelector.Buttons>
+        <controls:MultiValueSelector.ItemTemplate>
+            <DataTemplate>
+                <TextBlock Foreground="{StaticResource ThemeForegroundBrush}" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0} ({1})">
+                            <Binding Path="." />
+                            <Binding Path="." Converter="{StaticResource ClilocValueConverter}" />
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+            </DataTemplate>
+        </controls:MultiValueSelector.ItemTemplate>
+    </controls:MultiValueSelector>
+
+</UserControl>

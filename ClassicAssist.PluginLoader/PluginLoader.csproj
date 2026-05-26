@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- net48 because the host (CUO's ClassicUO.Bootstrap) is net472 and Assembly.LoadFile
+         only accepts CLR-compatible assemblies. This loader runs ON the host CLR and uses
+         hostfxr to spin up a side-by-side CoreCLR for the real net10 plugin. -->
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>ClassicAssist.PluginLoader</AssemblyName>
+    <RootNamespace>Assistant</RootNamespace>
+    <OutputPath>..\Output\PluginLoader\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="cuoapi">
+      <HintPath>..\ClassicAssist\cuoapi.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

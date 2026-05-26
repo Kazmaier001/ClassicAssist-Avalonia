@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <BuildDate>$([System.DateTime]::op_Subtraction($([System.DateTime]::get_Now().get_Date()),$([System.DateTime]::new(2020,7,3))).get_TotalDays())</BuildDate>
+    <Version>0.1.0</Version>
+    <FileVersion>0.1.0.$(BuildDate)</FileVersion>
+    <InformationalVersion>0.1.0+build.$(BuildDate)</InformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
+    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.0.7" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.0" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="semver" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Strings.en-GB.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Strings.pl-PL.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Strings.resx">
+      <SubType>Designer</SubType>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Resources\Colours.axaml" />
+    <AvaloniaResource Include="Resources\DarkTheme.axaml" />
+    <AvaloniaResource Include="Resources\Icons.axaml" />
+    <AvaloniaResource Include="Resources\DebugToolBarStyle.axaml" />
+    <AvaloniaResource Include="Resources\ResourceDictionary.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Exclude legacy WPF XAML files from build -->
+    <None Remove="Resources\Colours.xaml" />
+    <None Remove="Resources\DarkTheme.xaml" />
+    <None Remove="Resources\Icons.xaml" />
+    <None Remove="Resources\DebugToolBarStyle.xaml" />
+    <None Remove="Resources\ResourceDictionary.xaml" />
+    <None Remove="Settings.settings" />
+  </ItemGroup>
+
+</Project>

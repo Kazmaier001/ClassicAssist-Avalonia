@@ -1,0 +1,92 @@
+﻿using System;
+using System.Collections.Concurrent;
+using System.Threading;
+
+namespace ClassicAssist.Misc
+{
+    public class ThreadQueue<T> : IDisposable
+    {
+        private readonly Action<T> _onAction;
+        private readonly ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
+        private readonly EventWaitHandle _wh = new AutoResetEvent( false );
+        private readonly Thread _workerThread;
+
+        public ThreadQueue( Action<T> onAction )
+        {
+            _onAction = onAction;
+            _workerThread = new Thread( ProcessQueue ) { IsBackground = true };
+            _workerThread.Start();
+        }
+
+        public int Count => _queue.Count;
+
+        public void Dispose()
+        {
+            StopThread();
+        }
+
+        public void Clear()
+        {
+            while ( _queue.TryDequeue( out T item ) )
+            {
+            }
+        }
+
+        private void ProcessQueue()
+        {
+            while ( _workerThread.IsAlive )
+            {
+                if ( _queue.TryDequeue( out T queueItem ) )
+                {
+                    if ( queueItem == null )
+                    {
+                        return;
+                    }
+
+                    // Never let a handler exception kill the worker — that strands the queue
+                    // and silently freezes the plugin (e.g. game stuck at "Entering Britannia"
+                    // because the first incoming packet handler NRE'd in the Sentry scope while
+                    // Player was still null). Log + continue.
+                    try { _onAction( queueItem ); }
+                    catch ( Exception ex )
+                    {
+                        try { Console.Error.WriteLine( $"[ClassicAssist] ThreadQueue handler swallowed {ex.GetType().Name}: {ex.Message}" ); } catch { }
+                    }
+                }
+                else
+                {
+                    _wh.WaitOne();
+                }
+            }
+        }
+
+        public void Enqueue( T queueItem )
+        {
+            _queue.Enqueue( queueItem );
+
+            try
+            {
+                _wh.Set();
+            }
+            catch ( ObjectDisposedException )
+            {
+            }
+        }
+
+        private void StopThread()
+        {
+            _queue.Enqueue( default );
+
+            try
+            {
+                _wh.Set();
+            }
+            catch ( ObjectDisposedException )
+            {
+            }
+
+            _workerThread.Join();
+            _wh.Close();
+        }
+    }
+}

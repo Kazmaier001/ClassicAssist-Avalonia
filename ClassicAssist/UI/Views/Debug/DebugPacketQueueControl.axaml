@@ -1,0 +1,58 @@
+<UserControl x:Class="ClassicAssist.UI.Views.Debug.DebugPacketQueueControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+             xmlns:debug="clr-namespace:ClassicAssist.UI.ViewModels.Debug"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls" d:DesignHeight="400" d:DesignWidth="550">
+    <UserControl.Styles>
+        <StyleInclude Source="Styles.axaml" />
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <UserControl.DataContext>
+        <debug:DebugPacketQueueViewModel />
+    </UserControl.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <controls:ImageButton Command="{Binding ClearCommand}" ImageSource="{StaticResource RemoveIcon}"
+                                  ToolTip.Tip="{x:Static resources:Strings.Clear_All}" />
+            <TextBlock Text="Threshold:" VerticalAlignment="Center" Margin="0,0,10,0" />
+            <TextBox Text="{Binding Threshold}" Width="100" />
+        </StackPanel>
+        <Border BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderBrush}" Grid.Row="1">
+            <ListBox ItemsSource="{Binding Items}">
+                <i:Interaction.Behaviors>
+                    <behaviours:ItemsControlAutoScrollBehaviour />
+                </i:Interaction.Behaviors>
+                <ListBox.Template>
+                    <ControlTemplate>
+                        <ScrollViewer>
+                            <ItemsPresenter />
+                        </ScrollViewer>
+                    </ControlTemplate>
+                </ListBox.Template>
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Background="{DynamicResource ThemeInnerControlBackgroundBrush}" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+        <StackPanel Grid.Row="2" Margin="0,10,0,0">
+            <TextBlock Text="{Binding IncomingQueueLength, StringFormat={}Incoming queue length: {0}}" />
+            <TextBlock Text="{Binding OutgoingQueueLength, StringFormat={}Outgoing queue length: {0}}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

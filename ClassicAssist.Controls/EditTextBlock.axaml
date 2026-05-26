@@ -1,0 +1,59 @@
+<UserControl x:Name="root" x:Class="ClassicAssist.Controls.EditTextBlock"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ClassicAssist.Controls"
+             xmlns:valueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared">
+    <UserControl.Resources>
+        <DrawingImage x:Key="PencilIcon">
+            <DrawingImage.Drawing>
+                <DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+                    <DrawingGroup>
+                        <DrawingGroup>
+                            <GeometryDrawing
+                                Geometry="F1 M512,512z M0,0z M434.214,0L0,434.213 0,512 77.787,512 512,77.786 434.214,0z M65.359,481.998L30.002,481.998 30.002,446.641 50.125,426.518 85.482,461.875 65.359,481.998z M399.206,77.437L434.214,42.429 469.571,77.786 434.563,112.794 399.206,77.437z"
+                                Brush="{Binding #root.Foreground}" />
+                        </DrawingGroup>
+                    </DrawingGroup>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+        <valueConverters:PriorityMultiValueConverter x:Key="PriorityMultiValueConverter" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock x:Name="textBlock" VerticalAlignment="Center" Grid.Column="0"
+                   PointerPressed="TextBlock_OnPointerPressed" Background="Transparent"
+                   TextTrimming="CharacterEllipsis"
+                   Foreground="{Binding $parent[UserControl].Foreground}">
+            <TextBlock.Text>
+                <MultiBinding Converter="{StaticResource PriorityMultiValueConverter}">
+                    <Binding ElementName="root" Path="Label" />
+                    <Binding ElementName="root" Path="Text" />
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
+        <!-- No Text binding: Avalonia's ElementName binding to a property on the same
+             UserControl (root.Text) doesn't reliably push writes back when the bound
+             value is coerced through an outer TwoWay chain (e.g. Text→Value where Value
+             is int). Sync explicitly via code-behind so EditTextBlock.Text's setter
+             definitively raises change notifications for outer bindings. -->
+        <TextBox x:Name="textBox" Grid.Column="0" Grid.ColumnSpan="2"
+                 VerticalAlignment="Center" IsVisible="False" KeyDown="TextBox_OnKeyDown"
+                 LostFocus="TextBox_LostFocus" />
+        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" x:Name="buttonsPanel" Grid.Column="1">
+            <!-- Small left margin so the pencil doesn't visually merge with
+                 the text immediately to its left (especially when the host
+                 cell sizes EditTextBlock to its content). -->
+            <Button Width="16" Height="16" BorderThickness="0" Background="Transparent" Margin="4,0,0,0" Padding="0"
+                    IsVisible="{Binding #root.ShowIcon}"
+                    Click="Button_OnClick" x:Name="pencilButton">
+                <Image Source="{StaticResource PencilIcon}" Width="16" HorizontalAlignment="Center" />
+            </Button>
+            <ContentPresenter HorizontalAlignment="Right"
+                              Content="{Binding $parent[local:EditTextBlock].Buttons}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

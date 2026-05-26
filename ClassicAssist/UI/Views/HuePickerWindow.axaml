@@ -1,0 +1,58 @@
+<Window x:Class="ClassicAssist.UI.Views.HuePickerWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:controls="clr-namespace:ClassicAssist.UI.Controls"
+        xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared" Background="{DynamicResource ThemeWindowBackgroundBrush}"
+        Title="{x:Static resources:Strings.Hue_Picker}" Height="350" Width="450"
+        DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}">
+    <Window.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+    </Window.Styles>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <DockPanel>
+                <TextBlock Text="{x:Static resources:Strings.Filter_}" DockPanel.Dock="Left" Margin="0,0,10,0" />
+                <TextBox Text="{Binding FilterText}" />
+            </DockPanel>
+            <ListBox x:Name="listView" ItemsSource="{Binding FilteredItems}" SelectedItem="{Binding SelectedItem}"
+                     Grid.Row="1" Margin="0,10,0,0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel ToolTip.Tip="{Binding EntryName}" LastChildFill="True">
+                            <TextBlock Text="{Binding Index}" DockPanel.Dock="Left" Width="50"/>
+                            <controls:HueEntryControl
+                                HueEntry="{Binding Entry, Mode=TwoWay}" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+        <StackPanel Classes="dialog-buttons" Orientation="Horizontal" Grid.Row="1"
+                    Margin="10,0,10,10" HorizontalAlignment="Right">
+            <StackPanel.Styles>
+                <Style Selector="Button">
+                    <Setter Property="Margin" Value="10,0,0,0" />
+                </Style>
+            </StackPanel.Styles>
+            <Button Content="{x:Static resources:Strings.OK}" Command="{Binding OKCommand}"
+                    CommandParameter="{Binding SelectedItem, ElementName=listView}" />
+            <Button Content="{x:Static resources:Strings.Cancel}">
+                <i:Interaction.Behaviors>
+                    <behaviours:CloseOnClickBehaviour />
+                </i:Interaction.Behaviors>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

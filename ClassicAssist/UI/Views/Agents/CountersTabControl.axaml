@@ -1,0 +1,77 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+    xmlns:ValueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+    xmlns:agents="clr-namespace:ClassicAssist.UI.ViewModels.Agents"
+    xmlns:counters="clr-namespace:ClassicAssist.Data.Counters"
+    x:Class="ClassicAssist.UI.Views.Agents.CountersTabControl"
+    d:DesignHeight="250" d:DesignWidth="500">
+    <!-- DesignStyle removed (WPF-only) -->
+    <UserControl.DataContext>
+        <agents:CountersTabViewModel />
+    </UserControl.DataContext>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.Resources>
+            <ValueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+        </Grid.Resources>
+        <DataGrid Grid.Row="0" Margin="10" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" AutoGenerateColumns="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="{x:Static resources:Strings.Name}" Width="150">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="counters:CountersAgentEntry">
+                                <controls:EditTextBlock
+
+                                    Text="{Binding Name}" ShowIcon="True" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="{x:Static resources:Strings.Graphic}" Width="100"
+                                    Binding="{Binding Graphic, StringFormat={}0x{0:x}}" />
+                    <DataGridTemplateColumn Header="{x:Static resources:Strings.Color}" Width="75">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="{x:Type counters:CountersAgentEntry}">
+                                <controls:EditTextBlock
+
+                                    Text="{Binding Color, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" ShowIcon="True" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="{x:Static resources:Strings.Count}" Width="75"
+                                    Binding="{Binding Count}" />
+                </DataGrid.Columns>
+        </DataGrid>
+        <DockPanel Grid.Row="1" Margin="10,0,10,10">
+            <CheckBox IsChecked="{Binding Warn}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{x:Static resources:Strings.Warn_when_counter_amount_below_}"
+                               VerticalAlignment="Center" Margin="0,0,5,0" />
+                    <NumericUpDown FormatString="0" Minimum="0" Value="{Binding WarnAmount}" />
+                </StackPanel>
+            </CheckBox>
+        </DockPanel>
+        <DockPanel Grid.Row="2" Margin="10,0,10,10">
+            <DockPanel.Styles>
+                <Style Selector="Button">
+                    <Setter Property="Padding" Value="20,5" />
+                </Style>
+            </DockPanel.Styles>
+            <Button Content="{x:Static resources:Strings.Remove}" HorizontalAlignment="Left" Margin="0,0,10,0"
+                    Command="{Binding RemoveEntryCommand}" CommandParameter="{Binding SelectedItem}" />
+            <Button Content="{x:Static resources:Strings.Insert}" HorizontalAlignment="Left"
+                    Command="{Binding InsertEntryCommand}" />
+            <Button Content="{x:Static resources:Strings.Recount}" HorizontalAlignment="Right"
+                    Command="{Binding RecountCommand}" />
+        </DockPanel>
+    </Grid>
+</UserControl>

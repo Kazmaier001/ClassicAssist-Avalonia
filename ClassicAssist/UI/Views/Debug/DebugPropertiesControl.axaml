@@ -1,0 +1,47 @@
+<UserControl x:Class="ClassicAssist.UI.Views.Debug.DebugPropertiesControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:debug="clr-namespace:ClassicAssist.UI.ViewModels.Debug"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+             xmlns:misc="clr-namespace:ClassicAssist.UI.Misc"
+             xmlns:b="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:behaviours="clr-namespace:ClassicAssist.UI.Misc.Behaviours" Background="{DynamicResource ThemeBackgroundBrush}"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <debug:JoinArrayValueConverter x:Key="JoinArrayValueConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="Styles.axaml" />
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <UserControl.DataContext>
+        <debug:DebugPropertiesViewModel />
+    </UserControl.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <controls:ImageButton ToolTip.Tip="{x:Static resources:Strings.Target_object___}"
+                                  Command="{Binding TargetCommand}" ImageSource="{StaticResource CrosshairIcon}" />
+        </StackPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" AutoGenerateColumns="False" IsReadOnly="True">
+            <b:Interaction.Behaviors>
+                <behaviours:ClipboardBehaviour CopyCommand="{Binding ClipboardCopyCommand}" />
+            </b:Interaction.Behaviors>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="{x:Static resources:Strings.Cliloc}" Width="75"
+                                    Binding="{Binding Cliloc}" />
+                    <DataGridTextColumn Header="{x:Static resources:Strings.Name}" Width="250"
+                                    Binding="{Binding Text}" />
+                    <DataGridTextColumn Header="{x:Static resources:Strings.Arguments}" Width="175"
+                                    Binding="{Binding Arguments, Converter={StaticResource JoinArrayValueConverter}}" />
+                </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

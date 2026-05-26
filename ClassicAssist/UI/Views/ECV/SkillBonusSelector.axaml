@@ -1,0 +1,10 @@
+<UserControl x:Class="ClassicAssist.UI.Views.ECV.SkillBonusSelector"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ecv="clr-namespace:ClassicAssist.UI.Views.ECV"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <ComboBox ItemsSource="{x:Static ecv:SkillBonusSelector.SkillNames}"
+              SelectedItem="{Binding Additional, Mode=TwoWay}"
+              HorizontalAlignment="Stretch" />
+</UserControl>

@@ -1,0 +1,12 @@
+<UserControl x:Class="ClassicAssist.Controls.HeaderTextBox"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:DataType="local:HeaderTextBox"
+             xmlns:local="clr-namespace:ClassicAssist.Controls"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <DockPanel HorizontalAlignment="Stretch">
+        <TextBlock x:Name="TextBlock" Text="{Binding Header}" VerticalAlignment="Center" Margin="0,0,0,10"
+                   DockPanel.Dock="Left" Width="100" />
+        <TextBox x:Name="TextBox" Text="{Binding Value, Mode=TwoWay}" DockPanel.Dock="Right" />
+    </DockPanel>
+</UserControl>

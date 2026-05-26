@@ -1,0 +1,38 @@
+<UserControl x:Class="ClassicAssist.UI.Views.OptionsTab.QueueLastTargetControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels" d:DataContext="{d:DesignInstance viewModels:OptionsTabViewModel}">
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <StackPanel>
+        <CheckBox Content="{x:Static resources:Strings.Queue_Last_Target___Target_Self}"
+                  IsChecked="{Binding CurrentOptions.QueueLastTarget}" />
+        <!-- WPF used Label (which has its own Padding=5 + disabled-state
+             Foreground from the dark theme). Avalonia's Label inherits
+             from ContentControl with different padding and renders disabled
+             text noticeably lighter than the surrounding controls, breaking
+             alignment with the CheckBox above. Use TextBlock — same as
+             every other inline label in the Options tab — and let the
+             ancestor IsEnabled propagate the FluentTheme :disabled
+             opacity uniformly. -->
+        <DockPanel IsEnabled="{Binding CurrentOptions.QueueLastTarget}" Margin="20,0,0,0">
+            <TextBlock Text="{x:Static resources:Strings.Max_Target_Queue_Length_}"
+                       DockPanel.Dock="Left" VerticalAlignment="Center" />
+            <NumericUpDown FormatString="0" Minimum="1" Maximum="100"
+                           Value="{Binding CurrentOptions.MaxTargetQueueLength}"
+                           Width="70" DockPanel.Dock="Right"
+                           Margin="10,0,0,0" />
+        </DockPanel>
+        <StackPanel Orientation="Horizontal" IsEnabled="{Binding CurrentOptions.QueueLastTarget}"
+                    Margin="20,0,0,0"
+                    ToolTip.Tip="{x:Static resources:Strings.Time_in_milliseconds___1_to_not_expire_}">
+            <TextBlock Text="{x:Static resources:Strings.Expire_Targets_}" VerticalAlignment="Center" />
+            <TextBox Text="{Binding CurrentOptions.ExpireTargetsMS, Mode=TwoWay}"
+                     Width="75" MinWidth="0" Margin="10,0" />
+            <TextBlock Text="ms" VerticalAlignment="Center" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

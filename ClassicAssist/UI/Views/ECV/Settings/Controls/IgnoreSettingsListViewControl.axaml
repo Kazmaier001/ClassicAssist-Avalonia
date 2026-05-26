@@ -1,0 +1,68 @@
+<UserControl x:Class="ClassicAssist.UI.Views.ECV.Settings.Controls.IgnoreSettingsControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:b="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:misc="clr-namespace:ClassicAssist.UI.Views.ECV.Settings.Misc"
+             xmlns:misc1="clr-namespace:ClassicAssist.Misc"
+             xmlns:valueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+             xmlns:editTextBlocks="clr-namespace:ClassicAssist.UI.Views.ECV.Settings.Controls.EditTextBlocks"
+             xmlns:models="clr-namespace:ClassicAssist.UI.Views.ECV.Settings.Models"
+             d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- DebugToolBarStyle moved to Styles section -->
+            </ResourceDictionary.MergedDictionaries>
+            <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+            <misc1:BindingProxy x:Key="ClilocEditTextBlockProxy" />
+            <misc1:BindingProxy x:Key="HueEditTextBlockProxy" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+        <StyleInclude Source="../../../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" MinHeight="150"
+              MaxHeight="200">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="{x:Static resources:Strings.ID}" Width="180">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="{x:Type models:CombineStacksOpenContainersIgnoreEntry}">
+                            <editTextBlocks:GraphicEditTextBlock ID="{Binding ID}"
+
+                                                                 ClilocEditTextBlock="{Binding Source={StaticResource ClilocEditTextBlockProxy}, Path=Data}"
+                                                                 HueEditTextBlock="{Binding Source={StaticResource HueEditTextBlockProxy}, Path=Data}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="{x:Static resources:Strings.Cliloc}" Width="250">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="{x:Type models:CombineStacksOpenContainersIgnoreEntry}">
+                            <editTextBlocks:ClilocEditTextBlock Cliloc="{Binding Cliloc}"
+>
+                                <b:Interaction.Behaviors>
+                                    <misc:SetBindingProxyBehaviour
+                                        Proxy="{StaticResource ClilocEditTextBlockProxy}" />
+                                </b:Interaction.Behaviors>
+                            </editTextBlocks:ClilocEditTextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="{x:Static resources:Strings.Color}" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="{x:Type models:CombineStacksOpenContainersIgnoreEntry}">
+                            <editTextBlocks:HueEditTextBlock Hue="{Binding Hue}"
+>
+                                <b:Interaction.Behaviors>
+                                    <misc:SetBindingProxyBehaviour
+                                        Proxy="{StaticResource HueEditTextBlockProxy}" />
+                                </b:Interaction.Behaviors>
+                            </editTextBlocks:HueEditTextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+    </DataGrid>
+</UserControl>

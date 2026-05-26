@@ -1,0 +1,87 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ClassicAssist.Launcher"
+        xmlns:properties="clr-namespace:ClassicAssist.Launcher.Properties"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+        x:Class="ClassicAssist.Launcher.MainWindow"
+        mc:Ignorable="d" Background="{DynamicResource ThemeBackgroundBrush}"
+        Title="{x:Static properties:Resources.ClassicAssist_Launcher}" Width="500"
+        CanResize="False" WindowStartupLocation="CenterScreen" SizeToContent="Height">
+    <i:Interaction.Behaviors>
+        <behaviours:WindowClosingBehaviour Command="{Binding ClosingCommand}" />
+    </i:Interaction.Behaviors>
+    <Window.DataContext>
+        <local:MainViewModel />
+    </Window.DataContext>
+    <Grid Margin="10" RowDefinitions="Auto,Auto,Auto,Auto">
+        <Grid.Styles>
+            <Style Selector="HeaderedContentControl">
+                <Setter Property="Padding" Value="5" />
+                <Setter Property="Margin" Value="0,0,0,5" />
+            </Style>
+        </Grid.Styles>
+        <HeaderedContentControl Header="{x:Static properties:Resources.Client_Options}" Grid.Row="0">
+            <Grid ColumnDefinitions="*,Auto">
+                <ComboBox Grid.Column="0" Margin="0,0,5,0" ItemsSource="{Binding ClientPaths}"
+                          SelectedItem="{Binding SelectedClientPath}" HorizontalAlignment="Stretch" />
+                <Button Content="…" Grid.Column="1" Padding="10,0,10,0"
+                        Command="{Binding SelectClientPathCommand, Mode=OneWay}" />
+            </Grid>
+        </HeaderedContentControl>
+        <HeaderedContentControl Header="{x:Static properties:Resources.Ultima_Online}" Grid.Row="1">
+            <Grid ColumnDefinitions="*,Auto">
+                <ComboBox Grid.Column="0" Margin="0,0,5,0" ItemsSource="{Binding DataPaths}"
+                          SelectedItem="{Binding SelectedDataPath}" HorizontalAlignment="Stretch" />
+                <Button Content="…" Grid.Column="1" Padding="10,0,10,0"
+                        Command="{Binding SelectDataPathCommand, Mode=OneWay}" />
+            </Grid>
+        </HeaderedContentControl>
+        <HeaderedContentControl Header="{x:Static properties:Resources.Shard}" Grid.Row="2">
+            <Grid ColumnDefinitions="*,Auto">
+                <ComboBox Margin="0,0,5,0" ItemsSource="{Binding ShardManager.VisibleShards}"
+                          SelectedIndex="0" SelectedItem="{Binding SelectedShard}"
+                          Grid.Column="0" HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Content="{x:Static properties:Resources.Shards}" Grid.Column="1"
+                        Command="{Binding ShowShardsWindowCommand, Mode=OneWay}" />
+            </Grid>
+        </HeaderedContentControl>
+        <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Stretch">
+            <StackPanel.Styles>
+                <Style Selector="Button">
+                    <Setter Property="Margin" Value="0,0,5,0" />
+                </Style>
+                <Style Selector="Image">
+                    <Setter Property="Margin" Value="0,3,10,3" />
+                    <Setter Property="Height" Value="16" />
+                </Style>
+            </StackPanel.Styles>
+            <Button Command="{Binding StartCommand, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{StaticResource PlayIcon}" />
+                    <TextBlock Text="{x:Static properties:Resources.Start}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding CheckForUpdateCommand, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{StaticResource RefreshIcon}" />
+                    <TextBlock Text="{x:Static properties:Resources.Check_for_update}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding OptionsCommand, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{StaticResource OptionsIcon}" />
+                    <TextBlock Text="{x:Static properties:Resources.Options}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

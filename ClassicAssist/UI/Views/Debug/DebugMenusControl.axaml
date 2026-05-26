@@ -1,0 +1,30 @@
+<UserControl x:Class="ClassicAssist.UI.Views.Debug.DebugMenusControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:debug="clr-namespace:ClassicAssist.UI.ViewModels.Debug"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls" Background="{DynamicResource ThemeBackgroundBrush}"
+             d:DesignHeight="400" d:DesignWidth="550">
+    <UserControl.DataContext>
+        <debug:DebugMenusViewModel />
+    </UserControl.DataContext>
+    <UserControl.Styles>
+        <StyleInclude Source="Styles.axaml" />
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <controls:TwoColumnSplitterControl>
+        <controls:TwoColumnSplitterControl.LeftContent>
+            <ListBox MinWidth="120" ItemsSource="{Binding Items}"
+                     SelectedItem="{Binding SelectedItem}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding ID, StringFormat={}0x{0:x4}}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </controls:TwoColumnSplitterControl.LeftContent>
+        <controls:TwoColumnSplitterControl.RightContent>
+            <TextBox Text="{Binding Text}" Classes="TextBoxStyle" />
+        </controls:TwoColumnSplitterControl.RightContent>
+    </controls:TwoColumnSplitterControl>
+</UserControl>

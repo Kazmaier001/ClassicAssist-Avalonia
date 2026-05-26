@@ -1,0 +1,29 @@
+<UserControl x:Name="userControl" x:Class="ClassicAssist.UI.Views.MultiItemIDSelector"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ClassicAssist.UI.Views"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+             xmlns:misc="clr-namespace:ClassicAssist.Misc" d:DesignWidth="400">
+    <UserControl.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <!-- ReSharper disable once Xaml.BindingWithoutContextNotResolved -->
+    <controls:MultiValueSelector Values="{Binding Values}" HexDisplay="True">
+        <controls:MultiValueSelector.Buttons>
+            <!-- Buttons content is hosted inside MultiValueSelector's Popup
+                 (separate visual tree, separate NameScope). Both the WPF
+                 BindingProxy/FindAncestor trick and Avalonia ElementName
+                 fail to resolve across that boundary, so we set the Command
+                 from code-behind in InitializeComponent. -->
+            <controls:ImageButton x:Name="TargetButton"
+                                  ImageSource="{StaticResource CrosshairIcon}" Margin="5,0,0,0" />
+        </controls:MultiValueSelector.Buttons>
+        <controls:MultiValueSelector.ItemTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding ., StringFormat={}0x{0:x8}}"
+                           Foreground="{StaticResource ThemeForegroundBrush}" />
+            </DataTemplate>
+        </controls:MultiValueSelector.ItemTemplate>
+    </controls:MultiValueSelector>
+</UserControl>

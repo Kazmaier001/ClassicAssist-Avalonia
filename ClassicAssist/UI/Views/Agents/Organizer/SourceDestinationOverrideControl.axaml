@@ -1,0 +1,45 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+    xmlns:local="clr-namespace:ClassicAssist.UI.Views.Agents.Organizer"
+    xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+    x:Name="userControl"
+    x:Class="ClassicAssist.UI.Views.Agents.Organizer.SourceDestinationOverrideControl"
+    d:DesignWidth="100">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/Icons.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <valueConverters:IntToHexStringValueConverter x:Key="IntToHexStringValueConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="{x:Static resources:Strings.Default}"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding !Serial, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:SourceDestinationOverrideControl}}}" />
+        <TextBlock Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="{Binding Serial, Converter={StaticResource IntToHexStringValueConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:SourceDestinationOverrideControl}}}"
+                   IsVisible="{Binding Serial, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:SourceDestinationOverrideControl}}}" />
+        <StackPanel Orientation="Horizontal" Grid.Column="1"
+                    VerticalAlignment="Center">
+            <controls:ImageButton ImageSource="{StaticResource CrosshairIcon}"
+                                  Command="{Binding SetCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:SourceDestinationOverrideControl}}}"
+                                  CommandParameter="{Binding SetCommandParameter, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:SourceDestinationOverrideControl}}}" />
+            <controls:ImageButton ImageSource="{StaticResource RemoveIcon}"
+                                  Command="{Binding ClearCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:SourceDestinationOverrideControl}}}"
+                                  CommandParameter="{Binding SetCommandParameter, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:SourceDestinationOverrideControl}}}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

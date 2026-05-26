@@ -1,0 +1,21 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ClassicAssist.Shared" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="RepositoryName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ClassicAssist</Value>
+    </Setting>
+    <Setting Name="RepositoryOwner" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Reetus</Value>
+    </Setting>
+    <Setting Name="ExceptionlessKey" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SentryDsn" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="UpdateManifestURL" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://classicassist.azurewebsites.net/releases.json</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

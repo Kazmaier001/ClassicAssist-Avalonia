@@ -1,0 +1,193 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>..\Output\</OutputPath>
+    <Configurations>Debug;Release;Develop</Configurations>
+    <!-- Causes the SDK to emit a ClassicAssist.runtimeconfig.json next to the DLL.
+         hostfxr_initialize_for_runtime_config reads this to know which framework version
+         (Microsoft.NETCore.App, net10.0) to bring up. Also flips the deps.json layout so
+         dependency probing works for an Assembly.LoadFile target. -->
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Data\Bodies.json" />
+    <None Remove="Data\BuffIcons.json" />
+    <None Remove="Data\Properties.json" />
+    <None Remove="Data\Regions.json" />
+    <None Remove="Data\Spells.json" />
+    <None Remove="Data\Weapons.json" />
+    <None Remove="Python.Dark.xshd" />
+    <None Remove="Python.xshd" />
+    <None Remove="zlib32.dll" />
+    <None Remove="zlib64.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\Properties.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Bodies.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\BuffIcons.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Regions.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Spells.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Weapons.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Python.Dark.xshd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Python.xshd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="zlib32.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="zlib64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Resources\arrow_up.png" />
+    <AvaloniaResource Include="Resources\arrow_down.png" />
+    <AvaloniaResource Include="Resources\lock.png" />
+    <AvaloniaResource Include="Resources\green-circle.png" />
+    <AvaloniaResource Include="Resources\red-circle.png" />
+    <AvaloniaResource Include="Resources\splash_logo.png" />
+    <AvaloniaResource Include="Resources\screenshot_logo.png" />
+    <AvaloniaResource Include="Resources\logo.ico" />
+    <AvaloniaResource Include="Resources\uo.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Avalonia UI -->
+    <PackageReference Include="Avalonia" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.3.0" />
+    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.0.7" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
+    <PackageReference Include="AnimatedGif" Version="1.0.5" />
+    <PackageReference Include="MessageBox.Avalonia" Version="3.3.1.1" />
+    <!-- Imaging (for HuePicker port) -->
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.1" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.0" />
+    <!-- Cross-platform packages (unchanged) -->
+    <PackageReference Include="Crc32.NET" Version="1.2.0" />
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.68.0.3601" />
+    <PackageReference Include="IronPython" Version="2.7.12" />
+    <PackageReference Include="Microsoft.Graph" Version="4.54.0" />
+    <PackageReference Include="LiteDB" Version="5.0.21" />
+    <PackageReference Include="MegaApiClient" Version="1.10.4" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.66.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Octokit" Version="13.0.1" />
+    <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />
+    <PackageReference Include="Sentry" Version="4.13.0" />
+    <PackageReference Include="WebDav.Client" Version="2.8.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ClassicAssist.Controls\ClassicAssist.Controls.csproj" />
+    <ProjectReference Include="..\ClassicAssist.Shared\ClassicAssist.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="cuoapi">
+      <HintPath>cuoapi.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\MacroCommandHelp.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MacroCommandHelp.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\MacroCommandHelp.it-IT.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\MacroCommandHelp.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>MacroCommandHelp.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Data\ContainerGumpIDs.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Filters\Audio\Animals.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Filters\Audio\Environment.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Filters\Audio\Monsters.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Filters\Audio\Player.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Filters\Audio\Skills.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Filters\Audio\Spells.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Masteries.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\MountID.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Modules.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Sounds\Bike Horn.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="yapf\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="BuildDateAttribute">
+      <_Parameter1>$([System.DateTime]::UtcNow.Date.Ticks)</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\AutolootAdvanced\" />
+  </ItemGroup>
+  <PropertyGroup>
+    <BuildDate>$([System.DateTime]::op_Subtraction($([System.DateTime]::get_Now().get_Date()),$([System.DateTime]::new(2020,7,3))).get_TotalDays())</BuildDate>
+    <Version>0.1.0</Version>
+    <FileVersion>0.1.0.$(BuildDate)</FileVersion>
+    <InformationalVersion>0.1.0+build.$(BuildDate)</InformationalVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Develop|AnyCPU'">
+    <DefineConstants>DEBUG;DEVELOP</DefineConstants>
+  </PropertyGroup>
+</Project>

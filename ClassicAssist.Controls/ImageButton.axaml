@@ -1,0 +1,35 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:ClassicAssist.Controls">
+    <!--
+        ImageButton style for Avalonia. Because ImageButton overrides
+        StyleKeyOverride to typeof(Button) (so it picks up the FluentTheme
+        Button ControlTheme), the `controls|ImageButton` type selector
+        doesn't match. We tag every ImageButton with the `imagebutton`
+        class in its ctor and select against `Button.imagebutton`.
+        Must override the inner /template/ ContentPresenter on the base,
+        pointerover and pressed states — otherwise the global Button
+        style's #333333 fill paints behind the icon.
+    -->
+    <Style Selector="Button.imagebutton">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="2" />
+    </Style>
+    <Style Selector="Button.imagebutton /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.imagebutton:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.imagebutton:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="#4B4B4B" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.imagebutton:disabled">
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+</Styles>

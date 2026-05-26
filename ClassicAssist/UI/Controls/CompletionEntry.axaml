@@ -1,0 +1,70 @@
+<UserControl x:Name="userControl" x:Class="ClassicAssist.UI.Controls.CompletionEntry"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ValueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:avalonedit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:misc="clr-namespace:ClassicAssist.UI.Misc"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:behaviours="clr-namespace:ClassicAssist.UI.Misc.Behaviours" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <DrawingImage x:Key="RightChevron">
+                        <DrawingImage.Drawing>
+                            <DrawingGroup ClipGeometry="M0,0 V256 H256 V0 H0 Z">
+                                <DrawingGroup Opacity="1">
+                                    <DrawingGroup Opacity="1">
+                                        <GeometryDrawing Brush="{DynamicResource ThemeForegroundBrush}"
+                                                         Geometry="F1 M256,256z M0,0z M79.093,0L79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128z" />
+                                    </DrawingGroup>
+                                </DrawingGroup>
+                            </DrawingGroup>
+                        </DrawingImage.Drawing>
+                    </DrawingImage>
+                    <ValueConverters:BoolToIsVisibleConverter x:Key="BoolToIsVisibleConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <Grid HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="{Binding EntryName, ElementName=userControl}" Grid.Column="0" VerticalAlignment="Center" />
+        <Button Grid.Row="0" Grid.Column="1" Background="Transparent" BorderThickness="0" Margin="10,0,0,0" Padding="4"
+                Command="{Binding ToggleExpandedCommand}"
+                IsVisible="{Binding IsButtonEnabled, Converter={StaticResource BoolToIsVisibleConverter}}">
+            <Button.Content>
+                <Image Height="8" Source="{DynamicResource RightChevron}" />
+            </Button.Content>
+        </Button>
+        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="{DynamicResource ThemeWindowBackgroundBrush}"
+              IsVisible="{Binding IsExpanded}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <avalonedit:TextEditor ShowLineNumbers="True" x:Name="CodeTextEditor" Grid.Row="0"
+                                   HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                                   FontFamily="Consolas" Margin="10,0,0,0" IsReadOnly="True" Padding="10">
+                <i:Interaction.Behaviors>
+                    <behaviours:AvalonEditBehaviour
+                        TextBinding="{Binding EntryExample}" />
+                </i:Interaction.Behaviors>
+            </avalonedit:TextEditor>
+            <Button Content="{x:Static resources:Strings.Copy_to_clipboard}" Margin="5"
+                    Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding EntryExample}" Grid.Row="1" />
+        </Grid>
+    </Grid>
+</UserControl>

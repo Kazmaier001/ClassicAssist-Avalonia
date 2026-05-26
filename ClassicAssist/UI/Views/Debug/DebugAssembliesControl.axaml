@@ -1,0 +1,60 @@
+<UserControl x:Class="ClassicAssist.UI.Views.Debug.DebugAssembliesControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:debug="clr-namespace:ClassicAssist.UI.ViewModels.Debug"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+             xmlns:reflection="clr-namespace:System.Reflection;assembly=System.Runtime" Background="{DynamicResource ThemeBackgroundBrush}"
+             d:DesignHeight="250" d:DesignWidth="300">
+    <UserControl.DataContext>
+        <debug:DebugAssembliesViewModel />
+    </UserControl.DataContext>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="Styles.axaml" />
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0">
+            <TextBlock Text="{x:Static resources:Strings.Additional_assemblies_to_load_}" DockPanel.Dock="Top" />
+            <DataGrid x:Name="listView" Margin="0,10,0,10" ItemsSource="{Binding Items}"
+                      SelectedItem="{Binding SelectedItem}">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Name}"
+>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="reflection:Assembly">
+                                    <TextBlock Text="{Binding}" ToolTip.Tip="{Binding Location, Mode=OneWay}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <StackPanel.Styles>
+        <StyleInclude Source="Styles.axaml" />
+                <Style Selector="Button">
+                    <Setter Property="Margin" Value="0,0,10,0" />
+                </Style>
+            </StackPanel.Styles>
+            <Button Content="{x:Static resources:Strings.Load}" Command="{Binding LoadCommand}" />
+            <Button Content="{x:Static resources:Strings.Remove}" Command="{Binding RemoveCommand}"
+                    CommandParameter="{Binding SelectedItem, ElementName=listView}" />
+            <Button Content="{x:Static resources:Strings.Save}" Command="{Binding SaveCommand}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

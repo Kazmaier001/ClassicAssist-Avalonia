@@ -1,0 +1,44 @@
+<UserControl x:Class="ClassicAssist.Data.Backup.GoogleDrive.GoogleDriveConfigureControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ValueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+             xmlns:converters="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:googleDrive="clr-namespace:ClassicAssist.Data.Backup.GoogleDrive">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <ValueConverters:BoolToIsVisibleConverter x:Key="BoolToIsVisibleConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <UserControl.DataContext>
+        <googleDrive:GoogleDriveConfigureViewModel />
+    </UserControl.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="5" />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" HorizontalAlignment="Stretch"
+                    IsVisible="{Binding !IsLoggedIn}">
+            <Button Content="{x:Static resources:Strings.Login_With_Google}" Command="{Binding LoginCommand}" />
+            <TextBlock Text="{Binding ErrorMessage}" TextAlignment="Center"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Grid.Row="0" HorizontalAlignment="Stretch"
+                    IsVisible="{Binding IsLoggedIn}">
+            <Button Content="{x:Static resources:Strings.Logout}" Command="{Binding LogoutCommand}" />
+        </StackPanel>
+        <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="5"
+                     IsVisible="{Binding IsWorking, Converter={StaticResource BoolToIsVisibleConverter}}" />
+
+    </Grid>
+</UserControl>

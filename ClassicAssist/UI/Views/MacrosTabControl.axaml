@@ -1,0 +1,322 @@
+﻿<UserControl x:Class="ClassicAssist.UI.Views.MacrosTabControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+             xmlns:controls1="clr-namespace:ClassicAssist.UI.Controls"
+             xmlns:local="clr-namespace:ClassicAssist.Data.Macros"
+             xmlns:misc="clr-namespace:ClassicAssist.Misc"
+             xmlns:uimisc="clr-namespace:ClassicAssist.UI.Misc"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+             xmlns:draggableTreeView="clr-namespace:ClassicAssist.Controls.DraggableTreeView;assembly=ClassicAssist.Controls"
+             xmlns:macros="clr-namespace:ClassicAssist.UI.Views.Macros"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.DataContext>
+        <viewModels:MacrosTabViewModel />
+    </UserControl.DataContext>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <valueConverters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+            <valueConverters:DraggableGroupVisibilityValueConverter x:Key="DraggableGroupVisibility" />
+            <misc:BindingProxy x:Key="Proxy" Data="{Binding}" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../Resources/LeftRightIconToggleButton.axaml" />
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" Margin="0,0,5,0">
+            <i:Interaction.Behaviors>
+                <behaviours:GridSizeChangedBehaviour Width="{Binding LeftColumnWidth}" />
+            </i:Interaction.Behaviors>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <controls:FilterControl Grid.Row="0" Margin="0,0,0,5"
+                                        FilterText="{Binding FilterText}"
+                                        IsFilterVisible="{Binding IsFilterOpen}"
+                                        IsVisible="{Binding IsFilterOpen}" />
+                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                        BorderThickness="1" Grid.Row="1">
+                    <ScrollViewer x:Name="ScrollViewer">
+                        <i:Interaction.Behaviors>
+                            <uimisc:ScrollOnDragDrop />
+                        </i:Interaction.Behaviors>
+                        <draggableTreeView:DraggableTreeView ItemsSource="{Binding FilterDraggables}"
+                                                             x:Name="DraggableTreeView"
+                                                             BindableSelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                                                             BindableSelectedGroup="{Binding SelectedGroup, Mode=TwoWay}"
+                                                             IsEnabled="{Binding IsRecording, Converter={StaticResource InverseBooleanConverter}}"
+                                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                             BorderThickness="0"
+                                                             AllowDragGroups="False" Classes="CompressedTreeViewStyle"
+                                                             PointerWheelChanged="DraggableTreeView_OnPreviewMouseWheel"
+                                                             AllowDragItemsOntoItems="{Binding CurrentOptions.SortMacrosAlphabetical, Converter={StaticResource InverseBooleanConverter}}">
+                <!-- InputBindings removed (WPF-only) -->
+                            <draggableTreeView:DraggableTreeView.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="{x:Static resources:Strings.New_Group}"
+                                              Command="{Binding Source={StaticResource Proxy}, Path=Data.NewGroupCommand}" />
+                                    <MenuItem Header="{x:Static resources:Strings.Remove_Group}"
+                                              Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveGroupCommand}"
+                                              CommandParameter="{Binding SelectedGroup}" />
+                                    <Separator IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                    </Separator>
+                                    <MenuItem Header="{x:Static resources:Strings.Move_to_group}"
+                                          ItemsSource="{Binding Draggables}"
+                                          IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                        <MenuItem.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}" />
+                                            </DataTemplate>
+                                        </MenuItem.ItemTemplate>
+                                        <MenuItem.ItemContainerTheme>
+                                            <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                                <Setter Property="IsVisible" Value="{Binding Converter={StaticResource DraggableGroupVisibility}}" />
+                                                <Setter Property="Command" Value="{Binding Source={StaticResource Proxy}, Path=Data.MoveToGroupCommand}" />
+                                                <Setter Property="CommandParameter" Value="{Binding}" />
+                                            </ControlTheme>
+                                        </MenuItem.ItemContainerTheme>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </draggableTreeView:DraggableTreeView.ContextMenu>
+                            <draggableTreeView:DraggableTreeView.DataTemplates>
+                                <TreeDataTemplate DataType="{x:Type local:MacroGroup}"
+                                                          ItemsSource="{Binding Children}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Image Source="{DynamicResource GroupIcon}" Grid.Column="0" Height="16"
+                                               Margin="0,0,5,0" />
+                                        <controls:EditTextBlock
+                                            Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Grid.Column="1" />
+                                    </Grid>
+                                </TreeDataTemplate>
+                                <TreeDataTemplate DataType="{x:Type local:MacroEntry}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <controls:EditTextBlock
+                                            Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                            Grid.Column="0"
+                                            Classes.global="{Binding Global}"
+                                            Classes.running="{Binding IsRunning}" />
+                                        <TextBlock x:Name="Hotkey" Text="{Binding Hotkey}" Margin="2,0,0,0"
+                                                   Grid.Column="1" FontSize="9" Foreground="SpringGreen"
+                                                   TextAlignment="Right"
+                                                   VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                   IsVisible="{Binding !Hotkey.IsDefault}">
+
+                                        </TextBlock>
+                                    </Grid>
+                                </TreeDataTemplate>
+                            </draggableTreeView:DraggableTreeView.DataTemplates>
+                            <draggableTreeView:DraggableTreeView.Styles>
+                                <Style Selector="TextBlock">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                </Style>
+                                <Style Selector="controls|EditTextBlock.global TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </Style>
+                                <Style Selector="controls|EditTextBlock.running TextBlock">
+                                    <Setter Property="FontStyle" Value="Italic" />
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </Style>
+                            </draggableTreeView:DraggableTreeView.Styles>
+                        </draggableTreeView:DraggableTreeView>
+                    </ScrollViewer>
+                </Border>
+                <Grid Grid.Row="2" Margin="0,5,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="FontSize" Value="10" />
+                            <Setter Property="Padding" Value="4" />
+                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                            <Setter Property="VerticalAlignment" Value="Stretch" />
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                        </Style>
+                    </Grid.Styles>
+                    <Button Content="{x:Static resources:Strings.Remove}" Grid.Column="0" Margin="0,0,2.5,0"
+                            Command="{Binding RemoveMacroConfirmCommand, Mode=OneWay}"
+                            CommandParameter="{Binding SelectedItem}">
+                    </Button>
+                    <Button Content="{x:Static resources:Strings.New}" Grid.Column="1" Margin="2.5,0"
+                            Command="{Binding NewMacroCommand, Mode=OneWay}" />
+                    <Button Content="{x:Static resources:Strings.Save}" Grid.Column="2" Margin="2.5,0,0,0"
+                            Command="{Binding SaveMacroCommand, Mode=OneWay}" CommandParameter="{Binding SelectedItem}" />
+                </Grid>
+                <Grid Grid.Row="3" Margin="0,5,0,5">
+                    <Button Content="{Binding RecordLabel}" Command="{Binding RecordCommand}"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                </Grid>
+                <Grid Grid.Row="4" Margin="0,0,0,0">
+                    <Grid.Resources>
+                        <valueConverters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+                    </Grid.Resources>
+                    <Grid.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                            <Setter Property="VerticalAlignment" Value="Stretch" />
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                        </Style>
+                    </Grid.Styles>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                    <Button Content="{x:Static resources:Strings.Play}" Grid.Column="0" Margin="0,0,2.5,0"
+                            Command="{Binding ExecuteCommand, Mode=OneWay}"
+                            CommandParameter="{Binding SelectedItem}"
+                            IsEnabled="{Binding SelectedItem.IsRunning, Converter={StaticResource InverseBooleanConverter}, ElementName=DraggableTreeView}">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{x:Static resources:Strings.Reset_import_cache}"
+                                          Command="{Binding Source={StaticResource Proxy}, Path=Data.ResetImportCacheCommand}" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                    <Button Content="{x:Static resources:Strings.Stop}" Grid.Column="1" Margin="2.5,0,0,0"
+                            IsEnabled="{Binding SelectedItem.IsRunning}"
+                            Command="{Binding StopCommand, Mode=OneWay}" CommandParameter="{Binding SelectedItem}" />
+                </Grid>
+                <HeaderedContentControl Header="{x:Static resources:Strings.Hotkeys}" Grid.Row="6" Padding="5" Margin="0,5,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <controls1:TextBoxKey Shortcut="{Binding Hotkey}" Grid.Row="0" />
+                        <CheckBox Content="{x:Static resources:Strings.Pass_to_UO}" Grid.Row="1" Padding="4,-1,0,0"
+                                  Margin="0,5,0,0" IsChecked="{Binding SelectedItem.PassToUO}" />
+                        <Button Content="{x:Static resources:Strings.Clear}" Grid.Row="2" FontSize="12" Padding="4"
+                                Margin="0,5,0,0" Command="{Binding ClearHotkeyCommand, Mode=OneWay}"
+                                CommandParameter="{Binding SelectedItem}"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                    </Grid>
+                </HeaderedContentControl>
+            </Grid>
+        </Grid>
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+        <Grid Grid.Column="2" Margin="5,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <macros:MacrosCodeTextEditor SelectedItem="{Binding SelectedItem}" Document="{Binding Document}"
+                                         CaretPosition="{Binding CaretPosition}"
+                                         IsPerformingAction="{Binding IsPerformingAction}"
+                                         ClearExceptionCommand="{Binding ClearExceptionCommand}"
+                                         FormatError="{Binding FormatError}" />
+            <WrapPanel Orientation="Horizontal" Grid.Row="2" Margin="5">
+                <WrapPanel.Styles>
+                    <Style Selector="CheckBox">
+                        <Setter Property="Margin" Value="0,0,10,0" />
+                    </Style>
+                </WrapPanel.Styles>
+                <!-- ReSharper disable Xaml.BindingWithContextNotResolved -->
+                <CheckBox Content="{x:Static resources:Strings.Loop}"
+                          IsChecked="{Binding SelectedItem.Loop}" />
+                <CheckBox Content="{x:Static resources:Strings.Do_not_auto_interupt}"
+                          IsChecked="{Binding SelectedItem.DoNotAutoInterrupt}" />
+                <CheckBox Content="{x:Static resources:Strings.Run_in_background}"
+                          IsChecked="{Binding SelectedItem.IsBackground}" />
+                <CheckBox Content="{x:Static resources:Strings.Autostart}"
+                          IsChecked="{Binding SelectedItem.IsAutostart}"
+                          ToolTip.Tip="{x:Static resources:Strings.When_checked_macro_will_execute_automatically_after_login_}" />
+                <CheckBox Content="{x:Static resources:Strings.Undisableable}"
+                          ToolTip.Tip="{x:Static resources:Strings.Hotkey_will_still_trigger_with_hotkeys_disabled}"
+                          IsChecked="{Binding SelectedItem.Disableable, Converter={StaticResource InverseBooleanConverter}}" />
+                <CheckBox Content="{x:Static resources:Strings.Global}"
+                          ToolTip.Tip="{x:Static resources:Strings.Loaded_to_all_profiles}"
+                          IsChecked="{Binding SelectedItem.Global}" />
+                <!-- ReSharper restore Xaml.BindingWithContextNotResolved -->
+            </WrapPanel>
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ToggleButton x:Name="ToggleButton" Grid.Column="0" Height="15" Margin="0" Classes="LeftRightIconToggleButton" VerticalAlignment="Bottom"
+                              IsCheckedChanged="ToggleButton_OnIsCheckedChanged" />
+                <controls1:StretchyWrapPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Center">
+                    <controls1:StretchyWrapPanel.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Margin" Value="0,5,5,0" />
+                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                            <Setter Property="VerticalAlignment" Value="Stretch" />
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                        </Style>
+                    </controls1:StretchyWrapPanel.Styles>
+                    <Button Content="{x:Static resources:Strings.Object_Inspector}"
+                            Command="{Binding InspectObjectCommand, Mode=OneWay}" />
+                    <Button Content="{x:Static resources:Strings.Commands}" Command="{Binding ShowCommandsCommand}" />
+                    <Button Command="{Binding ShowMacrosWikiCommand}" Padding="5"
+                            ToolTip.Tip="{x:Static resources:Strings.Macro_Commands_Wiki__Launches_in_Browser_}">
+                        <Image Source="{StaticResource WebIcon}" Height="16" />
+                    </Button>
+                    <Button Content="{x:Static resources:Strings.Active_Objects}"
+                            Command="{Binding ShowActiveObjectsWindowCommand}" />
+                    <Button Command="{Binding ShareMacroCommand}" CommandParameter="{Binding SelectedItem}"
+                            ToolTip.Tip="{x:Static resources:Strings.Share_Macro}" Padding="5">
+                        <Image Source="{DynamicResource GithubIcon}" Height="16" />
+                    </Button>
+                    <Button Command="{Binding OpenModulesFolderCommand}" Padding="5"
+                            ToolTip.Tip="{x:Static resources:Strings.Open_Modules_Folder}">
+                        <Image Source="{StaticResource ModulesIcon}" Height="16" />
+                    </Button>
+                    <Button Command="{Binding CreateMacroButtonCommand}" CommandParameter="{Binding SelectedItem}"
+                            ToolTip.Tip="{x:Static resources:Strings.Create_Macro_Button}" Padding="5">
+                        <Image Source="{StaticResource AddButtonIcon}" Height="16" />
+                    </Button>
+                    <Button Command="{Binding FormatCodeCommand}" CommandParameter="{Binding SelectedItem}"
+                            Padding="5,0,5,0" ToolTip.Tip="{x:Static resources:Strings.Format_Code}">
+                        <Image Source="{StaticResource AlignLeftIcon}" Height="16" />
+                    </Button>
+                    <Button Command="{Binding OpenExternalCommand}" CommandParameter="{Binding SelectedItem}"
+                            Padding="5,0,5,0" ToolTip.Tip="{x:Static resources:Strings.Open_in_external_editor}">
+                        <Image Source="{StaticResource VSCodeIcon}" Height="16" />
+                    </Button>
+                </controls1:StretchyWrapPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

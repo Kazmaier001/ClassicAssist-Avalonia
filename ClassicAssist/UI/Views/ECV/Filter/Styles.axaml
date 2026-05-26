@@ -1,0 +1,144 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:valueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+        xmlns:localValueConverters="clr-namespace:ClassicAssist.UI.Views.ECV.Filter.ValueConverters"
+        xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls">
+    <Styles.Resources>
+        <ResourceDictionary>
+            <DrawingImage x:Key="PlusIcon">
+                <DrawingImage.Drawing>
+                    <DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+                        <DrawingGroup Opacity="1">
+                            <DrawingGroup Opacity="1">
+                                <GeometryDrawing Brush="{DynamicResource ThemeForegroundBrush}"
+                                                 Geometry="F1 M512,512z M0,0z M492,236L276,236 276,20C276,8.954 267.046,0 256,0 244.954,0 236,8.954 236,20L236,236 20,236C8.954,236 0,244.954 0,256 0,267.046 8.954,276 20,276L236,276 236,492C236,503.046 244.954,512 256,512 267.046,512 276,503.046 276,492L276,276 492,276C503.046,276 512,267.046 512,256 512,244.954 503.046,236 492,236z" />
+                            </DrawingGroup>
+                        </DrawingGroup>
+                    </DrawingGroup>
+                </DrawingImage.Drawing>
+            </DrawingImage>
+            <DrawingImage x:Key="MinusIcon">
+                <DrawingImage.Drawing>
+                    <DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+                        <DrawingGroup Opacity="1">
+                            <DrawingGroup Opacity="1">
+                                <GeometryDrawing Brush="{DynamicResource ThemeForegroundBrush}"
+                                                 Geometry="F1 M512,512z M0,0z M492,236L20,236C8.954,236 0,244.954 0,256 0,267.046 8.954,276 20,276L492,276C503.046,276 512,267.046 512,256 512,244.954 503.046,236 492,236z" />
+                            </DrawingGroup>
+                        </DrawingGroup>
+                    </DrawingGroup>
+                </DrawingImage.Drawing>
+            </DrawingImage>
+            <DrawingImage x:Key="CirclePlusItem">
+                <DrawingImage.Drawing>
+                    <DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+                        <GeometryDrawing Brush="{DynamicResource ThemeForegroundBrush}"
+                                         Geometry="F1 M512,512z M0,0z M256,512A256,256,0,1,0,256,0A256,256,0,1,0,256,512z M232,344L232,280 168,280C154.7,280 144,269.3 144,256 144,242.7 154.7,232 168,232L232,232 232,168C232,154.7 242.7,144 256,144 269.3,144 280,154.7 280,168L280,232 344,232C357.3,232 368,242.7 368,256 368,269.3 357.3,280 344,280L280,280 280,344C280,357.3 269.3,368 256,368 242.7,368 232,357.3 232,344z" />
+                    </DrawingGroup>
+                </DrawingImage.Drawing>
+            </DrawingImage>
+            <DrawingImage x:Key="CircleRemoveIcon">
+                <DrawingImage.Drawing>
+                    <DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+                        <GeometryDrawing Brush="{DynamicResource ThemeForegroundBrush}"
+                                         Geometry="F1 M512,512z M0,0z M256,512A256,256,0,1,0,256,0A256,256,0,1,0,256,512z M175,175C184.4,165.6,199.6,165.6,208.9,175L255.9,222 302.9,175C312.3,165.6 327.5,165.6 336.8,175 346.1,184.4 346.2,199.6 336.8,208.9L289.8,255.9 336.8,302.9C346.2,312.3 346.2,327.5 336.8,336.8 327.4,346.1 312.2,346.2 302.9,336.8L255.9,289.8 208.9,336.8C199.5,346.2 184.3,346.2 175,336.8 165.7,327.4 165.6,312.2 175,302.9L222,255.9 175,208.9C165.6,199.5,165.6,184.3,175,175z" />
+                    </DrawingGroup>
+                </DrawingImage.Drawing>
+            </DrawingImage>
+            <valueConverters:EnumToIntegerValueConverter x:Key="EnumToIntegerValueConverter" />
+            <localValueConverters:GroupItemMultiValueConverter x:Key="GroupItemMultiValueConverter" />
+            <localValueConverters:CollectionIndexZeroVisibilityConverter x:Key="CollectionIndexZeroVisibilityConverter" />
+        </ResourceDictionary>
+    </Styles.Resources>
+    <Style Selector="ComboBox.EditComboBox">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid x:Name="ToggleGrid">
+                        <!-- WPF parity: when the original ComboBox had IsEditable=True the
+                             trigger hid NonEditableBorder and showed EditableBorder so users
+                             saw an EditTextBlock (with pencil) for renaming the profile, not
+                             the per-item ItemTemplate X. Avalonia ComboBox has no IsEditable;
+                             we always show the EditableBorder for this style. Profile delete
+                             happens via the top-left X button or via the per-popup-item X. -->
+                        <Border x:Name="EditableBorder"
+                                Background="{DynamicResource ComboBoxNonEditableBackgroundBrush}"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource ComboBoxNonEditableBorderBrush}">
+                            <controls:EditTextBlock x:Name="PART_EditableTextBox" Focusable="True"
+                                                    Margin="0,0,30,0"
+                                                    Text="{Binding Path=SelectedItem.Name, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                                    ShowIcon="True" FontSize="12" Padding="4" />
+                        </Border>
+                        <ToggleButton x:Name="ToggleButton"
+                                      ClickMode="Press"
+                                      HorizontalAlignment="Right"
+                                      VerticalAlignment="Stretch"
+                                      Width="30"
+                                      Background="{DynamicResource ComboBoxButtonBackgroundBrush}"
+                                      BorderBrush="{DynamicResource ComboBoxButtonBorderBrush}"
+                                      BorderThickness="0"
+                                      Foreground="{DynamicResource ComboBoxButtonForegroundBrush}"
+                                      IsChecked="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsDropDownOpen, Mode=TwoWay}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <!-- Whole button is a single hit-test cell; bumped from 20→30
+                                         because the previous template carved out only a 20-DIP wide
+                                         right slice for the chevron, leaving users to thread a tiny
+                                         hit box. Background transparent so the underlying border
+                                         still shows through. -->
+                                    <Border x:Name="ButtonBorder"
+                                            Background="{TemplateBinding Background}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            BorderBrush="{TemplateBinding BorderBrush}">
+                                        <Path x:Name="Arrow"
+                                              Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z"
+                                              Fill="{TemplateBinding Foreground}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <Popup x:Name="PART_Popup" Placement="Bottom"
+                               Focusable="False"
+                               IsOpen="{TemplateBinding ComboBox.IsDropDownOpen}">
+                            <!-- Width binds to the ComboBox's actual rendered width so the
+                                 popup matches the button width. TemplateBinding MinWidth alone
+                                 defaulted to 0 when MinWidth wasn't explicitly set, leaving the
+                                 popup sized to its content (usually narrower than the button). -->
+                            <Grid Width="{Binding $parent[ComboBox].Bounds.Width}"
+                                  MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                <Border BorderThickness="1"
+                                        Background="{DynamicResource ComboBoxListBackgroundBrush}"
+                                        BorderBrush="{DynamicResource ComboBoxListBorderBrush}"
+                                        Margin="0,1,0,0">
+                                    <ScrollViewer>
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <!-- Visual states for the toggle button inside the EditComboBox template -->
+    <Style Selector="ComboBox.EditComboBox /template/ ToggleButton:pointerover /template/ Border#ButtonBorder">
+        <Setter Property="Background" Value="{DynamicResource ComboBoxButtonHoverBackgroundBrush}" />
+    </Style>
+    <Style Selector="ComboBox.EditComboBox /template/ ToggleButton:pressed /template/ Border#ButtonBorder">
+        <Setter Property="Background" Value="{DynamicResource ComboBoxButtonPressBackgroundBrush}" />
+    </Style>
+    <Style Selector="ComboBox.EditComboBox /template/ ToggleButton:checked /template/ Border#ButtonBorder">
+        <Setter Property="Background" Value="{DynamicResource ComboBoxButtonCheckedBackgroundBrush}" />
+    </Style>
+    <Style Selector="ComboBox.EditComboBox /template/ ToggleButton:disabled /template/ Border#ButtonBorder">
+        <Setter Property="Background" Value="{DynamicResource ComboBoxButtonDisabledBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxButtonDisabledBorderBrush}" />
+    </Style>
+    <Style Selector="ComboBox.EditComboBox /template/ ToggleButton:disabled /template/ Path#Arrow">
+        <Setter Property="Fill" Value="{DynamicResource ComboBoxButtonDisabledForegroundBrush}" />
+    </Style>
+</Styles>

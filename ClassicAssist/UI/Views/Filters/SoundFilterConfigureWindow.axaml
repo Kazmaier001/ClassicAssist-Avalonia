@@ -1,0 +1,69 @@
+<Window x:Class="ClassicAssist.UI.Views.Filters.SoundFilterConfigureWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+        xmlns:filters="clr-namespace:ClassicAssist.Data.Filters"
+        xmlns:views="clr-namespace:ClassicAssist.UI.Views.Filters"
+        Background="{DynamicResource ThemeWindowBackgroundBrush}"
+        Title="{x:Static resources:Strings.Configure_Sound_Filters}" Height="500" Width="400"
+        DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}" Topmost="True">
+    <Window.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </Window.Styles>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" RowDefinitions="Auto,*">
+            <Border Grid.Row="0" Background="{DynamicResource ThemeBackgroundBrush}"
+                    BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0,0,0,1"
+                    Padding="4,2" Margin="0,0,18,0">
+                <Grid ColumnDefinitions="*,50">
+                    <TextBlock Grid.Column="0" Text="{x:Static resources:Strings.Sound_Type}"
+                               Foreground="{DynamicResource ThemeForegroundBrush}"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="&#x2713;"
+                               Foreground="{DynamicResource ThemeForegroundBrush}"
+                               HorizontalAlignment="Center" />
+                </Grid>
+            </Border>
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                <ItemsControl ItemsSource="{Binding Categories}" Margin="0,0,18,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="views:SoundFilterCategory">
+                        <Expander Theme="{DynamicResource HotkeyCategoryExpander}"
+                                  Header="{Binding Name}"
+                                  IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                                  Margin="0,0,0,4">
+                            <ItemsControl ItemsSource="{Binding Items}" Margin="24,2,0,4">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="filters:SoundFilterEntry">
+                                        <Grid ColumnDefinitions="*,50" Margin="0,1">
+                                            <TextBlock Grid.Column="0" Text="{Binding LocalizedName}"
+                                                       VerticalAlignment="Center" />
+                                            <CheckBox Grid.Column="1" IsChecked="{Binding Enabled}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Expander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        </Grid>
+        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="{x:Static resources:Strings.Close}" Padding="25,5">
+                <i:Interaction.Behaviors>
+                    <behaviours:CloseOnClickBehaviour />
+                </i:Interaction.Behaviors>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

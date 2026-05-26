@@ -1,0 +1,218 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:agents="clr-namespace:ClassicAssist.UI.ViewModels.Agents"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+    xmlns:ValueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+    x:Class="ClassicAssist.UI.Views.Agents.ScreenshotTabControl"
+    d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/Icons.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <ValueConverters:InverseBooleanValueConverter x:Key="InverseBooleanValueConverter" />
+            <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+            <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#FF8A8A8A" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+        <!-- Hover / selection chrome for the screenshot list. Matches
+             ItemIDSelectionWindow's 1-DIP Aero-blue border + low-alpha fill.
+             Declared at UserControl scope (not inside <ListBox.Styles>) so
+             the /template/ part selector actually reaches the ListBoxItem's
+             PART_ContentPresenter. BorderThickness MUST be set inside each
+             state's setter (not factored into a base style) because Fluent's
+             template-binding for BorderThickness defaults to 0 and beats a
+             separate base /template/ setter on property-precedence grounds —
+             verified via TestHost (inspect-screenshot-hover flag). -->
+        <Style Selector="ListBox#listBox ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <!-- Reserve the 1-DIP border in the base state via the ListBoxItem
+                 itself; Fluent's PART_ContentPresenter uses a TemplateBinding
+                 to pull BorderThickness from the ListBoxItem, so this is the
+                 only path that actually wins. Setting it via a /template/
+                 setter on the part itself gets ignored. -->
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBox#listBox ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1426A0DA" />
+            <Setter Property="BorderBrush" Value="#26A0DA" />
+        </Style>
+        <Style Selector="ListBox#listBox ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1B3A52" />
+            <Setter Property="BorderBrush" Value="#26A0DA" />
+        </Style>
+        <Style Selector="ListBox#listBox ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#274C66" />
+            <Setter Property="BorderBrush" Value="#26A0DA" />
+        </Style>
+    </UserControl.Styles>
+    <UserControl.DataContext>
+        <agents:ScreenshotTabViewModel />
+    </UserControl.DataContext>
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Button Content="{x:Static resources:Strings.Take_Snapshot}" Margin="0,0,0,5"
+                    Command="{Binding TakeSnapshotCommand}" />
+            <Border Grid.Row="1" Background="#151515"
+                    BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1">
+            <ListBox x:Name="listBox" Background="Transparent" BorderThickness="0"
+                     Padding="0,0,18,0"
+                     ScrollViewer.VerticalScrollBarVisibility="Visible"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ItemsSource="{Binding Screenshots}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Margin pushes the thumbnail inward so the hover /
+                             selection background fill shows around the image
+                             (Fluent's PART_ContentPresenter Padding setter
+                             gets overridden by its TemplateBinding, so we
+                             do the inset on the content side instead). -->
+                        <Grid DoubleTapped="ScreenshotItem_OnDoubleTapped" Margin="4">
+                            <Image Source="{Binding Bitmap.Value}"
+                                   Stretch="UniformToFill" />
+                            <Border Background="Black" CornerRadius="5" Padding="2" HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom" Margin="5" Opacity="0.8">
+                                <TextBlock Text="{Binding Extension}" VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            </Border>
+            <Button Grid.Row="2" Content="{x:Static resources:Strings.Open_Folder}" Margin="0,5,0,0"
+                    Command="{Binding OpenFolderCommand}" />
+        </Grid>
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="10,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <HeaderedContentControl Grid.Row="0" Header="{x:Static resources:Strings.Options}">
+                    <StackPanel Margin="5">
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Styles>
+                                <Style Selector="CheckBox">
+                                    <Setter Property="Margin" Value="0,0,10,0" />
+                                </Style>
+                            </StackPanel.Styles>
+                            <CheckBox Content="{x:Static resources:Strings.UO_Only}"
+                                      IsChecked="{Binding UoOnly}" />
+                            <CheckBox Content="{x:Static resources:Strings.Fullscreen}"
+                                      IsChecked="{Binding Fullscreen}" />
+                        </StackPanel>
+                        <DockPanel Margin="0,5,0,0">
+                            <TextBlock Text="{x:Static resources:Strings.Filename_Format_}" DockPanel.Dock="Left"
+                                       Margin="0,0,5,0" VerticalAlignment="Center" />
+                            <TextBox Text="{Binding FilenameFormat}" DockPanel.Dock="Right" />
+                        </DockPanel>
+                    </StackPanel>
+                </HeaderedContentControl>
+                <HeaderedContentControl Grid.Row="1" Margin="0,5,0,0">
+                    <HeaderedContentControl.Header>
+                        <CheckBox Content="{x:Static resources:Strings.Information_Bar}"
+                                  IsChecked="{Binding IncludeInfoBar}" />
+                    </HeaderedContentControl.Header>
+                    <StackPanel Margin="5" IsEnabled="{Binding IncludeInfoBar}">
+                        <StackPanel.Styles>
+                            <Style Selector="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </StackPanel.Styles>
+                        <DockPanel>
+                            <TextBlock Text="{x:Static resources:Strings.Format_}" Margin="0,0,5,0"
+                                       DockPanel.Dock="Left" />
+                            <TextBox Text="{Binding Format}" DockPanel.Dock="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,0">
+                            <TextBlock Text="{x:Static resources:Strings.Font_Size_}" Margin="0,0,5,0"
+                                       DockPanel.Dock="Left" />
+                            <TextBox Text="{Binding FontSize}" DockPanel.Dock="Right" />
+                        </DockPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock Text="{x:Static resources:Strings.Font_Color_}" Margin="0,0,5,0" />
+                            <Button Command="{Binding SetFontColourCommand}"
+                                    CommandParameter="{Binding FontColor}">
+                                <Image Source="{StaticResource ColorWheelIcon}" Height="12" Width="12" />
+                            </Button>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock Text="{x:Static resources:Strings.Background_Color_}" Margin="0,0,5,0" />
+                            <Button Command="{Binding SetBackgroundColourCommand}"
+                                    CommandParameter="{Binding BackgroundColor}">
+                                <Image Source="{StaticResource ColorWheelIcon}" Height="12" Width="12" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </HeaderedContentControl>
+                <HeaderedContentControl Grid.Row="2" Margin="0,5,0,0">
+                    <HeaderedContentControl.Header>
+                        <CheckBox Content="{x:Static resources:Strings.Auto_Screenshot}"
+                                  IsChecked="{Binding AutoScreenshot}" />
+                    </HeaderedContentControl.Header>
+                    <StackPanel Margin="5" IsEnabled="{Binding AutoScreenshot}">
+                        <StackPanel.Styles>
+                            <Style Selector="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </StackPanel.Styles>
+                        <CheckBox Content="{x:Static resources:Strings.Player_Death}" IsChecked="{Binding PlayerDeath}" />
+                        <DockPanel Margin="0,5,0,0">
+                            <TextBlock DockPanel.Dock="Left" Margin="0,0,5,0">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} {1}">
+                                        <Binding Source="{x:Static resources:Strings.Player_Death_Delay_}" />
+                                        <Binding Source="{x:Static resources:Strings._milliseconds_}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                            <TextBox Text="{Binding PlayerDeathDelay}" DockPanel.Dock="Right">
+                            </TextBox>
+                        </DockPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <CheckBox Content="{x:Static resources:Strings.Mobile_Death}"
+                                      IsChecked="{Binding MobileDeath}"
+                                      Margin="0,0,5,0" />
+                            <Button Content="&#x2026;" Padding="2,0" Command="{Binding ConfigureFilterCommand}" />
+                        </StackPanel>
+                        <DockPanel Margin="0,5,0,0">
+                            <TextBlock DockPanel.Dock="Left" Margin="0,0,5,0">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} {1}">
+                                        <Binding Source="{x:Static resources:Strings.Mobile_Death_Delay_}" />
+                                        <Binding Source="{x:Static resources:Strings._milliseconds_}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                            <TextBox Text="{Binding MobileDeathDelay}" DockPanel.Dock="Right">
+                            </TextBox>
+                        </DockPanel>
+                        <DockPanel Margin="0,5,0,0">
+                            <TextBlock Text="{x:Static resources:Strings.Max_Distance_}" DockPanel.Dock="Left"
+                                       Margin="0,0,5,0" />
+                            <TextBox Text="{Binding Distance}" DockPanel.Dock="Right" />
+                        </DockPanel>
+                        <CheckBox Content="{x:Static resources:Strings.Only_if_enemy}" Margin="0,5,0,0"
+                                  IsChecked="{Binding OnlyIfEnemy}" />
+                    </StackPanel>
+                </HeaderedContentControl>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

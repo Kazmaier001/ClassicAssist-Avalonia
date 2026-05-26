@@ -1,0 +1,103 @@
+<Window x:Class="ClassicAssist.UI.Views.General.AutologinConfigureWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+        xmlns:converters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+        Title="{x:Static resources:Strings.Autologin}" Width="300" SizeToContent="Height"
+        Background="{DynamicResource WindowBackgroundBrush}" Topmost="True"
+        DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}">
+    <Window.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+        <!-- WPF xctk:IntegerUpDown / TimeSpanUpDown render their value right-aligned;
+             Avalonia NumericUpDown defaults to left.  Scope a right-aligned override
+             to all numeric / spinner inputs in this dialog only. -->
+        <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox">
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+            <!-- Pin inner TextBox height so clearing all text doesn't grow the
+                 NumericUpDown.  Outer NumericUpDown Height stays natural so the
+                 1-DIP top border isn't clipped at 125% DPI. -->
+            <Setter Property="Height" Value="22" />
+        </Style>
+        <Style Selector="ButtonSpinner TextBox">
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+            <Setter Property="Height" Value="22" />
+        </Style>
+    </Window.Styles>
+    <Window.Resources>
+        <converters:TimeSpanToStringValueConverter x:Key="TimeSpanToStringValueConverter" />
+        <converters:NullableDecimalToIntValueConverter x:Key="NullableDecimalToIntValueConverter" />
+    </Window.Resources>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.Styles>
+                <Style Selector="TextBlock">
+                    <Setter Property="Margin" Value="0,0,10,5" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                </Style>
+                <Style Selector="ComboBox">
+                    <Setter Property="Margin" Value="0,0,0,5" />
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="Height" Value="26" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="NumericUpDown">
+                    <Setter Property="Margin" Value="0,0,0,5" />
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                </Style>
+                <Style Selector="ButtonSpinner">
+                    <Setter Property="Margin" Value="0,0,0,5" />
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                </Style>
+            </Grid.Styles>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static resources:Strings.Account}" />
+            <ComboBox x:Name="comboBox" Grid.Row="0" Grid.Column="1"
+                      ItemsSource="{Binding Accounts}"
+                      SelectedItem="{Binding Account}" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static resources:Strings.Server_Index}" />
+            <NumericUpDown FormatString="0" Minimum="0" Grid.Row="1" Grid.Column="1"
+                           Value="{Binding ServerIndex, Converter={StaticResource NullableDecimalToIntValueConverter}}" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="{x:Static resources:Strings.Character_Index}" />
+            <NumericUpDown FormatString="0" Minimum="0" Grid.Row="2" Grid.Column="1"
+                           Value="{Binding CharacterIndex, Converter={StaticResource NullableDecimalToIntValueConverter}}" />
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="{x:Static resources:Strings.Connect_Delay}" />
+            <ButtonSpinner Grid.Row="3" Grid.Column="1" Spin="OnConnectDelaySpin">
+                <TextBox BorderThickness="0" Background="Transparent" MinHeight="0" MinWidth="0"
+                         Padding="4,1" VerticalContentAlignment="Center"
+                         Text="{Binding ConnectDelay, Converter={StaticResource TimeSpanToStringValueConverter}, UpdateSourceTrigger=LostFocus}" />
+            </ButtonSpinner>
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="{x:Static resources:Strings.Reconnect_Delay}" />
+            <ButtonSpinner Grid.Row="4" Grid.Column="1" Spin="OnReconnectDelaySpin">
+                <TextBox BorderThickness="0" Background="Transparent" MinHeight="0" MinWidth="0"
+                         Padding="4,1" VerticalContentAlignment="Center"
+                         Text="{Binding ReconnectDelay, Converter={StaticResource TimeSpanToStringValueConverter}, UpdateSourceTrigger=LostFocus}" />
+            </ButtonSpinner>
+        </Grid>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <StackPanel.Styles>
+                <Style Selector="Button">
+                    <Setter Property="Margin" Value="5,0,0,0" />
+                    <Setter Property="Padding" Value="20,5" />
+                    <Setter Property="MinWidth" Value="80" />
+                </Style>
+            </StackPanel.Styles>
+            <Button Content="{x:Static resources:Strings.OK}" Command="{Binding OkCommand}" />
+            <Button Content="{x:Static resources:Strings.Cancel}" Click="OnCancelClick" />
+        </StackPanel>
+    </Grid>
+</Window>

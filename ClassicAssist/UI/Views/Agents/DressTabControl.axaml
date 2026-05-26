@@ -1,0 +1,158 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:agents="clr-namespace:ClassicAssist.UI.ViewModels.Agents"
+    xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+    xmlns:misc="clr-namespace:ClassicAssist.Misc"
+    xmlns:dress="clr-namespace:ClassicAssist.Data.Dress"
+    xmlns:misc1="clr-namespace:ClassicAssist.UI.Misc"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+    xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+    xmlns:draggableListBox="clr-namespace:ClassicAssist.Controls.DraggableListBox;assembly=ClassicAssist.Controls"
+    xmlns:behaviours="clr-namespace:ClassicAssist.UI.Misc.Behaviours"
+    x:Class="ClassicAssist.UI.Views.Agents.DressTabControl"
+    d:DesignHeight="300" d:DesignWidth="500" Margin="0">
+    <!-- DesignStyle removed (WPF-only) -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <misc:BindingProxy Data="{Binding}" x:Key="Proxy" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <UserControl.DataContext>
+        <agents:DressTabViewModel />
+    </UserControl.DataContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="120" />
+        </Grid.ColumnDefinitions>
+        <Grid Margin="10" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.Resources>
+                <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+            </Grid.Resources>
+            <CheckBox IsChecked="{Binding MoveConflictingItems}" Grid.Row="0">
+                <TextBlock Text="{x:Static resources:Strings.Move_conflicting_items}" TextWrapping="Wrap" />
+            </CheckBox>
+            <CheckBox Content="{x:Static resources:Strings.Use_UO3D_Packets}"
+                      IsChecked="{Binding UseUO3DPackets}" Grid.Row="1"
+                      ToolTip.Tip="{x:Static resources:Strings.Requires_Server_Support}" />
+            <Border Grid.Row="2" Margin="0,5" Background="#151515"
+                    BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1">
+            <draggableListBox:DraggableListBox
+                x:Name="listBox1" ItemsSource="{Binding Items}"
+                Background="Transparent" BorderThickness="0"
+                SelectedItem="{Binding SelectedItem}" SelectedIndex="0">
+                <!-- InputBindings removed (WPF-only) -->
+
+                <i:Interaction.Behaviors>
+                    <behaviours:ItemsControlSelectNewEntryBehaviour SelectedItem="{Binding SelectedItem}"
+                                                               Type="{x:Type dress:DressAgentEntry}" />
+                </i:Interaction.Behaviors>
+                <draggableListBox:DraggableListBox.ItemTemplate>
+                    <DataTemplate>
+                        <controls:EditTextBlock Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+ />
+                    </DataTemplate>
+                </draggableListBox:DraggableListBox.ItemTemplate>
+            </draggableListBox:DraggableListBox>
+            </Border>
+            <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Content="{x:Static resources:Strings.Remove}" Grid.Column="0"
+                        Command="{Binding RemoveDressEntryCommand, Mode=OneWay}"
+                        CommandParameter="{Binding SelectedItem}" />
+                <Button Content="{x:Static resources:Strings.New}" Grid.Column="2"
+                        Command="{Binding NewDressEntryCommand, Mode=OneWay}" />
+            </Grid>
+        </Grid>
+        <Grid Margin="10" Grid.Column="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" Margin="0,0,0,5" Background="#151515"
+                        BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1">
+                <ListBox x:Name="listBox" ItemsSource="{Binding SelectedItem.Items}"
+                         Background="Transparent" BorderThickness="0"
+                         SelectedItem="{Binding SelectedDressItem}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="dress:DressAgentItem">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                            <MenuItem Header="{x:Static resources:Strings.Dress_Type}"
+                                      Command="{Binding Data.ChangeDressTypeCommand, Source={StaticResource Proxy}}"
+                                      CommandParameter="{Binding SelectedDressItem}" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
+                </Border>
+                <Button Content="{x:Static resources:Strings.Set_Undress_Container}" Grid.Row="1"
+                        Command="{Binding SetUndressContainerCommand, Mode=OneWay}"
+                        CommandParameter="{Binding SelectedItem}" />
+            </Grid>
+        </Grid>
+        <Grid Margin="5" Grid.Column="2">
+            <Grid.Resources>
+                <!--<ValueConverters:BoolToIsVisibleConverter x:Key="BoolToVisibilityValueConverter"/>-->
+            </Grid.Resources>
+            <Grid.Styles>
+                <Style Selector="Button">
+                    <Setter Property="Margin" Value="0,0,5,5" />
+                </Style>
+            </Grid.Styles>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Button Grid.Row="0" Content="{x:Static resources:Strings.Dress}"
+                    Command="{Binding DressAllItemsCommand, Mode=OneWay}" CommandParameter="{Binding SelectedItem}" />
+            <Button Grid.Row="1" Content="{x:Static resources:Strings.Undress}"
+                    Command="{Binding UndressItemsCommand}" CommandParameter="{Binding SelectedItem}" />
+            <Button Grid.Row="2" Content="{x:Static resources:Strings.Undress_All}"
+                    Command="{Binding UndressAllItemsCommand}" />
+            <Button Content="{x:Static resources:Strings.Import}" Grid.Row="3"
+                    Command="{Binding ImportItemsCommand, Mode=OneWay}" CommandParameter="{Binding SelectedItem}" />
+            <Button Content="{x:Static resources:Strings.New_Item}" Grid.Row="4"
+                    Command="{Binding AddDressItemCommand, Mode=OneWay}" CommandParameter="{Binding SelectedItem}" />
+            <Button Content="{x:Static resources:Strings.Remove}" Grid.Row="5"
+                    Command="{Binding RemoveDressItemCommand, Mode=OneWay}"
+                    CommandParameter="{Binding SelectedItem, ElementName=listBox}" />
+            <Button Content="{x:Static resources:Strings.Clear_All}" Grid.Row="6" Margin="0,10,5,0" Height="25"
+                    Command="{Binding ClearDressItemsCommand}" CommandParameter="{Binding SelectedItem}" />
+            <Grid Grid.Row="7" Margin="0,40,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+            </Grid>
+        </Grid>
+        <!--<dress:TextBoxKeys ShortcutChanged="{Binding ShortcutChangedCommand}"/>-->
+    </Grid>
+</UserControl>

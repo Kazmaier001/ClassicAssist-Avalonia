@@ -1,0 +1,83 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels"
+        xmlns:misc="clr-namespace:ClassicAssist.Misc"
+        xmlns:converters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters">
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="ContextMenu.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <misc:BindingProxy x:Key="Proxy" Data="{Binding}" />
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <ItemsPanelTemplate x:Key="ItemsPanelTemplate">
+                <WrapPanel />
+            </ItemsPanelTemplate>
+            <DataTemplate x:Key="DataTemplate">
+                <DockPanel x:Name="DockPanel" Background="Transparent" Classes="ecvTile"
+                           Classes.expanded="{Binding Source={StaticResource Proxy}, Path=Data.ShowProperties}">
+                    <StackPanel ContextMenu="{StaticResource ContextMenu}">
+                        <Image Source="{Binding Bitmap}" Height="32"
+                               DockPanel.Dock="Top" Stretch="Uniform"
+                               HorizontalAlignment="Center" />
+                        <Border x:Name="Border" BorderThickness="1">
+                            <!-- WPF used a DataTrigger that swapped the same TextBlock's
+                                 Text between Name and FullName based on ShowProperties.
+                                 Avalonia local values (inline Text=) beat style setters,
+                                 so use two TextBlocks toggled by IsVisible instead. The
+                                 outer DockPanel still carries the .expanded class which
+                                 controls Width (60 vs 120). -->
+                            <Panel>
+                                <TextBlock x:Name="TextBlock"
+                                           Text="{Binding Name}" FontSize="10" TextAlignment="Center"
+                                           Foreground="{DynamicResource ThemeForegroundBrush}"
+                                           Padding="1" TextWrapping="Wrap"
+                                           ToolTip.Tip="{Binding FullName}"
+                                           IsVisible="{Binding Source={StaticResource Proxy}, Path=Data.ShowProperties, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}" />
+                                <TextBlock Text="{Binding FullName}" FontSize="10" TextAlignment="Center"
+                                           Foreground="{DynamicResource ThemeForegroundBrush}"
+                                           Padding="1" TextWrapping="Wrap"
+                                           ToolTip.Tip="{Binding FullName}"
+                                           IsVisible="{Binding Source={StaticResource Proxy}, Path=Data.ShowProperties, FallbackValue=False}" />
+                            </Panel>
+                        </Border>
+                    </StackPanel>
+                </DockPanel>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Styles.Resources>
+    <Style Selector="ListBoxItem.FileItemStyle">
+        <Setter Property="Margin" Value="5" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <ContentPresenter />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style Selector="DataGrid.EntityListViewStyle">
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <!-- Width of each entity tile: 60 when not expanded (Name only), 120 when expanded (FullName). -->
+    <Style Selector="DockPanel.ecvTile">
+        <Setter Property="Width" Value="60" />
+    </Style>
+    <Style Selector="DockPanel.ecvTile.expanded">
+        <Setter Property="Width" Value="120" />
+    </Style>
+    <!-- Text-swap is now handled by IsVisible on twin TextBlocks (see DataTemplate). -->
+
+    <!-- Selected ListBoxItem highlights -->
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter Border#Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource SelectionColor2Brush}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter TextBlock#TextBlock">
+        <Setter Property="Background" Value="{DynamicResource SelectionColor1Brush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    </Style>
+</Styles>

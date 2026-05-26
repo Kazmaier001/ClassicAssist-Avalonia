@@ -1,0 +1,55 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+                    xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels"
+                    xmlns:misc="clr-namespace:ClassicAssist.Misc">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary>
+            <misc:BindingProxy x:Key="Proxy" Data="{Binding}" />
+            <ContextMenu x:Key="ContextMenu">
+                <MenuItem Header="{x:Static resources:Strings.Use_item}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.ContextUseItemCommand}" />
+                <MenuItem Header="{x:Static resources:Strings.Move_to_backpack}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.ContextMoveToBackpackCommand}" />
+                <MenuItem Header="{x:Static resources:Strings.Move_to_container}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.ContextMoveToContainerCommand}" />
+                <MenuItem Header="{x:Static resources:Strings.Move_to_bank}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.ContextMoveToBankCommand}" />
+                <MenuItem Header="{x:Static resources:Strings.Move_to_ground}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.ContextMoveToGroundCommand}" />
+                <MenuItem Header="{x:Static resources:Strings.Move_to_set}"
+                          ItemsSource="{Binding Source={StaticResource Proxy}, Path=Data.Options.ContainerSets}">
+                    <MenuItem.ItemContainerTheme>
+                        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                            <Setter Property="Header" Value="{Binding Name}" />
+                            <Setter Property="Command" Value="{Binding Source={StaticResource Proxy}, Path=Data.ContextMoveToSetCommand}" />
+                            <Setter Property="CommandParameter" Value="{Binding Items}" />
+                        </ControlTheme>
+                    </MenuItem.ItemContainerTheme>
+                </MenuItem>
+                <MenuItem Header="{x:Static resources:Strings.Open_container}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.ContextOpenContainerCommand}" />
+                <Separator />
+                <MenuItem Header="{x:Static resources:Strings.Context_menu_request}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.ContextContextMenuRequestCommand}" />
+                <MenuItem Header="{x:Static resources:Strings.Equip_Item}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.EquipItemCommand}" />
+                <MenuItem Header="{x:Static resources:Strings.Hide}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.HideItemCommand}" />
+                <MenuItem Header="{x:Static resources:Strings.Custom_Actions}"
+                          ItemsSource="{Binding Source={StaticResource Proxy}, Path=Data.CustomContextActions}">
+                    <MenuItem.ItemContainerTheme>
+                        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                            <Setter Property="Header" Value="{Binding Key}" />
+                            <Setter Property="Command" Value="{Binding Source={StaticResource Proxy}, Path=Data.ContextCustomActionCommand}" />
+                            <Setter Property="CommandParameter" Value="{Binding}" />
+                        </ControlTheme>
+                    </MenuItem.ItemContainerTheme>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="{x:Static resources:Strings.Target}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.ContextTargetCommand}" />
+            </ContextMenu>
+        </ResourceDictionary>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

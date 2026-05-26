@@ -1,0 +1,148 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+    xmlns:screenshot="clr-namespace:ClassicAssist.UI.ViewModels.Agents.Screenshot"
+    xmlns:screenshotData="clr-namespace:ClassicAssist.Data.Screenshot"
+    xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+    xmlns:valueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+    xmlns:ValueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+    x:Class="ClassicAssist.UI.Views.Agents.Screenshot.ScreenshotMobileFilterWindow"
+    Title="{x:Static resources:Strings.Screenshot}" Height="450" Width="400"
+    Background="{DynamicResource ThemeWindowBackgroundBrush}" Topmost="True">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- DebugToolBarStyle moved to Styles section -->
+            </ResourceDictionary.MergedDictionaries>
+            <ValueConverters:IntToHexStringValueConverter x:Key="IntToHexStringValueConverter" />
+            <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.Styles>
+        <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+        <StyleInclude Source="../../../../Resources/DarkTheme.axaml" />
+        <!-- WPF ListView used to render selected rows in gray when the list
+             didn't have keyboard focus, and accent blue when it did. The
+             global DataGridRow:selected rule in DarkTheme paints blue all
+             the time; override it locally to mirror the WPF behaviour. The
+             gray palette matches MacroBrowserControl's existing inactive-
+             selection treatment. -->
+        <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+            <Setter Property="Fill" Value="#4B4B4B" />
+            <Setter Property="Stroke" Value="#C4C4C4" />
+        </Style>
+        <Style Selector="DataGridRow:selected:pointerover /template/ Rectangle#BackgroundRectangle">
+            <Setter Property="Fill" Value="#4B4B4B" />
+            <Setter Property="Stroke" Value="#C4C4C4" />
+        </Style>
+        <Style Selector="DataGrid:focus-within DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+            <Setter Property="Fill" Value="#1B3A52" />
+            <Setter Property="Stroke" Value="#26A0DA" />
+        </Style>
+        <Style Selector="DataGrid:focus-within DataGridRow:selected:pointerover /template/ Rectangle#BackgroundRectangle">
+            <Setter Property="Fill" Value="#274C66" />
+            <Setter Property="Stroke" Value="#26A0DA" />
+        </Style>
+        <!-- Bottom-row dialog buttons: shared chunky look used across other
+             dialogs (mirrors the WPF reference). -->
+        <Style Selector="StackPanel.dialog-buttons > Button">
+            <Setter Property="Padding" Value="20,5" />
+            <Setter Property="MinWidth" Value="80" />
+        </Style>
+        <!-- Checkbox cells render flush left by default; center them under the
+             ✓ column header which is centered. -->
+        <Style Selector="DataGridCell CheckBox">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </Window.Styles>
+    <Window.DataContext>
+        <screenshot:ScreenshotMobileFilterViewModel />
+    </Window.DataContext>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <!-- Tight WPF-ToolBar-like packing: small horizontal margin between
+             buttons, transparent backgrounds. The leftover StyleInclude inside
+             a StackPanel resource was malformed XAML (Styles include doesn't
+             belong in panel-level Styles) and silently dropped. -->
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10" HorizontalAlignment="Left">
+            <StackPanel.Styles>
+                <Style Selector="Button">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Margin" Value="0,0,2,0" />
+                    <Setter Property="Padding" Value="4,2" />
+                </Style>
+            </StackPanel.Styles>
+            <Button ToolTip.Tip="{x:Static resources:Strings.Add}" Command="{Binding AddCommand}">
+                <Image Source="{StaticResource PlusIcon}" Height="16" />
+            </Button>
+            <Button ToolTip.Tip="{x:Static resources:Strings.Remove}" Command="{Binding RemoveCommand}">
+                <Image Source="{StaticResource RemoveIcon}" Height="14" />
+            </Button>
+            <Button ToolTip.Tip="{x:Static resources:Strings.Target}" Command="{Binding TargetCommand}">
+                <Image Source="{StaticResource CrosshairIcon}" Height="16" />
+            </Button>
+        </StackPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" AutoGenerateColumns="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="&#x2713;" Width="25">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="{x:Type screenshotData:ScreenshotMobileFilterEntry}">
+                                <CheckBox IsChecked="{Binding Enabled}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="{x:Static resources:Strings.ID}" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="{x:Type screenshotData:ScreenshotMobileFilterEntry}">
+                                <!-- HorizontalAlignment=Left makes the EditTextBlock
+                                     size to its content, putting the pencil right
+                                     after the ID text instead of pinning it to the
+                                     cell's right edge. The remaining cell width
+                                     creates the visual gap before the Notes column,
+                                     matching WPF GridView default layout. -->
+                                <controls:EditTextBlock ShowIcon="True"
+                                                        HorizontalAlignment="Left"
+                                                        Foreground="{StaticResource ThemeForegroundBrush}"
+                                                        Text="{Binding ID, Converter={StaticResource IntToHexStringValueConverter}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+ />
+
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="{x:Static resources:Strings.Notes}" Width="200">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="{x:Type screenshotData:ScreenshotMobileFilterEntry}">
+                                <controls:EditTextBlock ShowIcon="True"
+                                                        Text="{Binding Note, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+ />
+
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Classes="dialog-buttons" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2" Margin="0,10,0,0">
+            <!-- OK intentionally has no CloseOnClickBehaviour: Avalonia's
+                 Click fires BEFORE Command, so the behaviour would close
+                 the window before OkCommand can set DialogResult. The
+                 command sets DialogResult and raises RequestClose (handled
+                 in code-behind) atomically. -->
+            <Button Content="{x:Static resources:Strings.OK}" Command="{Binding OkCommand}"
+                    Margin="0,0,5,0" />
+            <Button Content="{x:Static resources:Strings.Cancel}">
+                <i:Interaction.Behaviors>
+                    <behaviours:CloseOnClickBehaviour />
+                </i:Interaction.Behaviors>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

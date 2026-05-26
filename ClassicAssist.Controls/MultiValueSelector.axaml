@@ -1,0 +1,68 @@
+<UserControl x:Name="userControl" x:Class="ClassicAssist.Controls.MultiValueSelector"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:behaviours="clr-namespace:ClassicAssist.Controls.Misc.Behaviours">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/Icons.axaml" />
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/Colours.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid DataContext="{Binding #userControl}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding ValuesDisplay}"
+                       TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch"
+                       ToolTip.Tip="{Binding ValuesDisplay}" />
+            <controls:ImageButton Grid.Column="1" ImageSource="{StaticResource EllipsisIcon}" Click="Button_Click" />
+        </Grid>
+        <Popup x:Name="Popup" IsLightDismissEnabled="True" Opened="Popup_Opened">
+            <Border Padding="5" Background="{DynamicResource BackgroundColor3Brush}">
+                <StackPanel Width="{Binding #userControl.PopupWidth}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="TextBox" KeyDown="TextBox_KeyDown" Grid.Column="0" />
+                        <ContentPresenter HorizontalAlignment="Right"
+                                          Content="{Binding #userControl.Buttons}" Grid.Column="1" />
+                    </Grid>
+                    <Border MinHeight="150" MaxHeight="300" BorderThickness="1"
+                            BorderBrush="{DynamicResource ThemeBorderBrush}" Margin="0,5,0,0">
+                        <ItemsControl
+                            ItemsSource="{Binding #userControl.Values}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding}"
+                                                   Foreground="{DynamicResource ThemeForegroundBrush}" />
+                                        <controls:ImageButton ImageSource="{StaticResource RemoveIcon}"
+                                                              ImageHeight="12" Grid.Column="1"
+                                                              Command="{Binding #userControl.RemoveItemCommand}"
+                                                              CommandParameter="{Binding}">
+                                            <i:Interaction.Behaviors>
+                                                <behaviours:ImageButtonConfirmDeleteBehaviour />
+                                            </i:Interaction.Behaviors>
+                                        </controls:ImageButton>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

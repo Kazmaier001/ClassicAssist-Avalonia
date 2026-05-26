@@ -1,0 +1,120 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:properties="clr-namespace:ClassicAssist.Launcher.Properties"
+        xmlns:launcher="clr-namespace:ClassicAssist.Launcher"
+        xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:valueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+        xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+        xmlns:converters="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base"
+        x:Class="ClassicAssist.Launcher.ShardsWindow"
+        Foreground="{DynamicResource ThemeForegroundBrush}"
+        mc:Ignorable="d" x:Name="Window" Background="{DynamicResource ThemeBackgroundBrush}"
+        Title="{x:Static properties:Resources.Shards}" Height="600" Width="720"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <valueConverters:InverseBooleanValueConverter x:Key="InverseBooleanConverter" />
+        <valueConverters:BooleanToOpacityValueConverter x:Key="BooleanToOpacityValueConverter" />
+    </Window.Resources>
+    <Window.DataContext>
+        <launcher:ShardsViewModel />
+    </Window.DataContext>
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- ToolBar replaced with a plain StackPanel; the WPF ToolBarStyle1 template is not portable. -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10,5,0,0">
+            <Button Height="24" Margin="0,0,5,0" Command="{Binding AddCommand, Mode=OneWay}"
+                    ToolTip.Tip="{x:Static properties:Resources.Add}">
+                <Image Source="{StaticResource AddIcon}" Height="16" />
+            </Button>
+            <Button Height="24" Margin="0,0,5,0" Command="{Binding RemoveCommand, Mode=OneWay}"
+                    CommandParameter="{Binding SelectedShard}"
+                    ToolTip.Tip="{x:Static properties:Resources.Remove}">
+                <Image Source="{StaticResource RemoveIcon}" Height="16" />
+            </Button>
+            <Button Height="24" Command="{Binding RefreshCommand}" CommandParameter="{Binding SelectedShard}"
+                    ToolTip.Tip="{x:Static properties:Resources.Refresh}">
+                <Image Source="{StaticResource RefreshIcon}" Height="16" />
+            </Button>
+        </StackPanel>
+        <DataGrid x:Name="grid" ItemsSource="{Binding ShardManager.VisibleShards}" Grid.Row="1"
+                  SelectedItem="{Binding SelectedShard}"
+                  AutoGenerateColumns="False" CanUserSortColumns="True" GridLinesVisibility="None"
+                  Margin="10,5,10,10">
+            <i:Interaction.Behaviors>
+                <behaviours:GridViewSort ComparerType="{x:Type launcher:ShardListViewComparer}" />
+            </i:Interaction.Behaviors>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="{x:Static properties:Resources.Shard}" Width="200">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="launcher:ShardEntry">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <controls:EditTextBlock Grid.Column="0"
+                                    Text="{Binding Name, Mode=TwoWay}"
+                                    CanEdit="{Binding IsPreset, Converter={StaticResource InverseBooleanConverter}}" />
+                                <Button Grid.Column="1" Background="Transparent" BorderThickness="0"
+                                        Command="{Binding Path=DataContext.OpenWebsiteCommand, ElementName=Window}"
+                                        CommandParameter="{Binding}"
+                                        IsEnabled="{Binding Website, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                        Opacity="{Binding Website, Converter={x:Static ObjectConverters.IsNotNull}, ConverterParameter=opacity}">
+                                    <Image Source="{DynamicResource WebIcon}" Height="16"
+                                           ToolTip.Tip="{x:Static properties:Resources.Open_Shard_Website}" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="{x:Static properties:Resources.Address}" Width="180">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="launcher:ShardEntry">
+                            <controls:EditTextBlock Text="{Binding Address, Mode=TwoWay}"
+                                CanEdit="{Binding IsPreset, Converter={StaticResource InverseBooleanConverter}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="{x:Static properties:Resources.Port}" Width="60">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="launcher:ShardEntry">
+                            <controls:EditTextBlock Text="{Binding Port, Mode=TwoWay}"
+                                CanEdit="{Binding IsPreset, Converter={StaticResource InverseBooleanConverter}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="{x:Static properties:Resources.Encryption}" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="launcher:ShardEntry">
+                            <CheckBox IsChecked="{Binding Encryption}"
+                                      IsEnabled="{Binding IsPreset, Converter={StaticResource InverseBooleanConverter}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="{x:Static properties:Resources.Players}" Width="75"
+                                    Binding="{Binding Status}" IsReadOnly="True" />
+                <DataGridTextColumn Header="{x:Static properties:Resources.Ping}" Width="50"
+                                    Binding="{Binding Ping}" IsReadOnly="True" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+            <Button Grid.Column="0" Margin="10,0" VerticalAlignment="Center"
+                    Background="Transparent" BorderThickness="0" Padding="0"
+                    Click="OpenGithub_OnClick">
+                <TextBlock Text="{x:Static properties:Resources.Open_a_GitHub_issue_to_have_your_shard_added_to_the_list_}"
+                           Foreground="{DynamicResource ThemeAccentBrush}" TextDecorations="Underline" />
+            </Button>
+            <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,10,10">
+                <Button Content="{x:Static properties:Resources.OK}" Margin="0,0,10,0"
+                        Command="{Binding OKCommand, Mode=OneWay}">
+                    <i:Interaction.Behaviors>
+                        <behaviours:CloseOnClickBehaviour />
+                    </i:Interaction.Behaviors>
+                </Button>
+                <Button Content="{x:Static properties:Resources.Cancel}" Command="{Binding CancelCommand, Mode=OneWay}">
+                    <i:Interaction.Behaviors>
+                        <behaviours:CloseOnClickBehaviour />
+                    </i:Interaction.Behaviors>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

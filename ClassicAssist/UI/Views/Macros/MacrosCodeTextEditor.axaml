@@ -1,0 +1,122 @@
+﻿<UserControl x:Name="userControl" x:Class="ClassicAssist.UI.Views.Macros.MacrosCodeTextEditor"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ClassicAssist.UI.Views.Macros"
+             xmlns:avalonedit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             xmlns:avalonEditEditing="clr-namespace:AvaloniaEdit.Editing;assembly=AvaloniaEdit"
+             xmlns:b="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:behaviours="clr-namespace:ClassicAssist.UI.Misc.Behaviours"
+             xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <valueConverters:LinePausedValueConverter x:Key="LinePausedValueConverter" />
+            <valueConverters:MacroExceptionValueConverter x:Key="MacroExceptionValueConverter" />
+            <valueConverters:BoolToIsVisibleConverter x:Key="BoolToIsVisibleConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+        <StyleInclude Source="../../../Resources/LeftRightIconToggleButton.axaml" />
+        <!-- Force always-on scrollbars on the code editor and make them
+             layout-reserving (not overlay) by giving them an explicit
+             Width/Height. AllowAutoHide=False alone keeps the FluentTheme
+             thin overlay version visible but still painted over the
+             content — setting Width/Height forces the scrollbar to claim
+             its own column/row in the host ScrollViewer's Grid layout. -->
+        <Style Selector="avalonedit|TextEditor ScrollViewer">
+            <Setter Property="AllowAutoHide" Value="False" />
+            <Setter Property="HorizontalScrollBarVisibility" Value="Visible" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Visible" />
+        </Style>
+        <Style Selector="avalonedit|TextEditor ScrollBar">
+            <Setter Property="AllowAutoHide" Value="False" />
+        </Style>
+        <Style Selector="avalonedit|TextEditor ScrollBar:vertical">
+            <Setter Property="Width" Value="17" />
+            <Setter Property="MinWidth" Value="17" />
+        </Style>
+        <Style Selector="avalonedit|TextEditor ScrollBar:horizontal">
+            <Setter Property="Height" Value="17" />
+            <Setter Property="MinHeight" Value="17" />
+        </Style>
+        <!-- Line-number gutter spacing: more breathing room on the left of
+             the digits, less between digits and code. -->
+        <Style Selector="avalonEditEditing|LineNumberMargin">
+            <Setter Property="Margin" Value="6,0,3,0" />
+        </Style>
+        <!-- Match WPF: editor background = ThemeInnerControlBackgroundBrush (#151515),
+             foreground for unhighlighted identifiers = ThemeForegroundBrush (#CCCCCC).
+             Without this AvaloniaEdit defaults to near-black background with white
+             text. -->
+        <Style Selector="avalonedit|TextEditor">
+            <Setter Property="Background" Value="#151515" />
+            <Setter Property="Foreground" Value="#CCCCCC" />
+        </Style>
+        <Style Selector="avalonEditEditing|TextArea">
+            <Setter Property="Background" Value="#151515" />
+            <Setter Property="Foreground" Value="#CCCCCC" />
+        </Style>
+    </UserControl.Styles>
+    <Grid Initialized="Grid_Initialized" DataContext="{Binding SelectedItem, ElementName=userControl, Mode=OneWay}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <avalonedit:TextEditor ShowLineNumbers="True" x:Name="CodeTextEditor"
+                               FontFamily="Consolas" FontSize="12"
+                               HorizontalScrollBarVisibility="Visible"
+                               VerticalScrollBarVisibility="Visible">
+            <b:Interaction.Behaviors>
+                <behaviours:AvalonEditBehaviour
+                    TextBinding="{Binding Macro}" />
+                <behaviours:AvalonBindingBehaviour DocumentBinding="{Binding Document, ElementName=userControl}"
+                                                   CaretBinding="{Binding CaretPosition, ElementName=userControl}" />
+                <behaviours:AvalonEditBreakpointMarginBehaviour Breakpoints="{Binding Breakpoints}" />
+                <behaviours:AvalonEditPausedLineBehaviour IsPaused="{Binding IsPaused}"
+                                                          PausedLineNumber="{Binding PausedLinedNumber}" />
+                <behaviours:AvalonEditShowCompletionTooltipBehaviour
+                    IsPaused="{Binding IsPaused}"
+                    FrameVariables="{Binding FrameVariables}" />
+            </b:Interaction.Behaviors>
+        </avalonedit:TextEditor>
+        <local:MacrosDebuggerControl Grid.Row="0" MacroEntry="{Binding Path=.}"
+                                     IsVisible="{Binding IsPaused}" />
+        <ProgressBar IsIndeterminate="True" Grid.Row="0" Height="5" VerticalAlignment="Bottom"
+                     IsVisible="{Binding IsPerformingAction, Converter={StaticResource BoolToIsVisibleConverter}, ElementName=userControl}" />
+        <StackPanel Orientation="Horizontal" Grid.Row="2" VerticalAlignment="Bottom"
+                    Background="{DynamicResource ThemeBackgroundBrush}"
+                    IsVisible="{Binding FormatError, ElementName=userControl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <Image Source="{DynamicResource ExclamationIcon}" Height="12" Margin="10,0,10,0" />
+            <TextBlock Text="{Binding FormatError, ElementName=userControl}" />
+        </StackPanel>
+        <Grid Grid.Row="2" Margin="5"
+              IsVisible="{Binding LastException, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Text="{Binding LastException, Converter={StaticResource MacroExceptionValueConverter}}"
+                Grid.Column="0" />
+            <Button Background="Transparent" Padding="0" Margin="0" BorderThickness="0" BorderBrush="Transparent"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Command="{Binding ClearExceptionCommand, ElementName=userControl}"
+                    CommandParameter="{Binding Path=.}" Height="12" Grid.Column="1">
+                <Image Source="{StaticResource closeIcon}" Margin="0,0,0,0" />
+            </Button>
+        </Grid>
+        <Grid Grid.Row="2" Margin="5"
+              IsVisible="{Binding IsPaused}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Text="{Binding PausedLinedNumber, Converter={StaticResource LinePausedValueConverter}}"
+                Grid.Column="0" />
+        </Grid>
+    </Grid>
+</UserControl>

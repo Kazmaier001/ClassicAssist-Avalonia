@@ -1,0 +1,36 @@
+<UserControl x:Class="ClassicAssist.UI.Controls.HexDumpControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ClassicAssist.UI.Controls"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             d:DesignHeight="300" d:DesignWidth="600">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.hexDump">
+            <Setter Property="FontFamily" Value="Consolas" />
+        </Style>
+    </UserControl.Styles>
+    <StackPanel
+        DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:HexDumpControl}}}">
+        <Label Content="{Binding Packet.Title}" />
+        <Grid>
+            <Grid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="{x:Static resources:Strings.Copy_packet_declaration}" Click="Copy_OnClick" />
+                    <MenuItem Header="{x:Static resources:Strings.Replay}" Click="Replay_OnClick" />
+                    <MenuItem Header="{x:Static resources:Strings.Ignore_packet_type}" Click="Ignore_OnClick" />
+                </ContextMenu>
+            </Grid.ContextMenu>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="{Binding BinaryData}" Classes="hexDump" Grid.Column="0"
+                       ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="10,10,0,0" Width="310" />
+            <TextBlock Text="{Binding TextData}" Classes="hexDump" Grid.Column="1"
+                       Margin="10,10,0,0" ScrollViewer.VerticalScrollBarVisibility="Disabled" />
+        </Grid>
+        <Label Content="{Binding Status}" />
+    </StackPanel>
+</UserControl>

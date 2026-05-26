@@ -1,0 +1,48 @@
+<UserControl x:Class="ClassicAssist.UI.Views.Debug.DebugActionQueueControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:debug="clr-namespace:ClassicAssist.UI.ViewModels.Debug"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls" Background="{DynamicResource ThemeBackgroundBrush}"
+             d:DesignHeight="400" d:DesignWidth="550">
+    <UserControl.DataContext>
+        <debug:DebugActionQueueViewModel />
+    </UserControl.DataContext>
+    <UserControl.Styles>
+        <StyleInclude Source="Styles.axaml" />
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <controls:ImageButton ToolTip.Tip="{x:Static resources:Strings.Clear}" Command="{Binding ClearCommand}"
+                                  ImageSource="{StaticResource RemoveIcon}" />
+        </StackPanel>
+        <DataGrid Grid.Row="1" x:Name="ListView" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True">
+            <i:Interaction.Behaviors>
+                <behaviours:ItemsControlAutoScrollBehaviour />
+            </i:Interaction.Behaviors>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="{x:Static resources:Strings.ID}" Width="240"
+                                    Binding="{Binding ID}" />
+                    <DataGridTextColumn Header="{x:Static resources:Strings.Event}" Width="65"
+                                    Binding="{Binding Event}" />
+                    <DataGridTextColumn Header="{x:Static resources:Strings.Caller}" Width="90"
+                                    Binding="{Binding Caller}" />
+                    <DataGridTextColumn Header="{x:Static resources:Strings.Elapsed}" Width="110"
+                                    Binding="{Binding Elapsed}" />
+                </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0, 10, 0, 0">
+            <CheckBox Content="{x:Static resources:Strings.Enabled}" IsChecked="{Binding Enabled}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

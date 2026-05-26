@@ -1,0 +1,56 @@
+<UserControl x:Class="ClassicAssist.UI.Views.Autoloot.AutolootValueControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:autoloot="clr-namespace:ClassicAssist.Data.Autoloot"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+             xmlns:data="clr-namespace:ClassicAssist.UO.Data"
+             xmlns:filter="clr-namespace:ClassicAssist.UI.Views.ECV.Filter.ValueConverters"
+             xmlns:misc="clr-namespace:ClassicAssist.UI.Misc"
+             xmlns:valueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+             xmlns:views="clr-namespace:ClassicAssist.UI.Views"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/Icons.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <filter:ConstraintEditorVisibilityConverter x:Key="ConstraintEditorVisibility" />
+            <valueConverters:EnumToIntegerValueConverter x:Key="EnumToIntegerValueConverter" />
+            <valueConverters:StringToIntConverter x:Key="StringToIntConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <Grid>
+        <ComboBox HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
+                  IsVisible="{Binding Property, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=Layer}"
+                  ItemsSource="{Binding Source={misc:EnumBindingSource {x:Type data:Layer}}}"
+                  SelectedItem="{Binding Value, Mode=TwoWay, Converter={StaticResource EnumToIntegerValueConverter}, ConverterParameter={x:Type data:Layer}}" />
+        <views:MultiItemIDSelector MinWidth="40"
+                                   HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Center"
+                                   Margin="14,0,8,0"
+                                   IsVisible="{Binding Property, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=MultiItemID}"
+                                   Values="{Binding Values, Mode=TwoWay}" />
+        <views:MultiClilocSelector MinWidth="40"
+                                   HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Center"
+                                   Margin="14,0,8,0"
+                                   IsVisible="{Binding Property, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=MultiCliloc}"
+                                   Values="{Binding Values, Mode=TwoWay}" />
+        <ComboBox HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
+                  IsVisible="{Binding Property, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=AutolootMatch}"
+                  ItemsSource="{x:Static autoloot:AutolootManager.AutolootEntryNames}"
+                  SelectedItem="{Binding Additional, Mode=TwoWay}" />
+        <controls:EditTextBlock HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                Margin="14,0,8,0"
+                                IsVisible="{Binding Property, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=Text}"
+                                ShowIcon="True"
+                                Text="{Binding Value, Mode=TwoWay, Converter={StaticResource StringToIntConverter}}" />
+    </Grid>
+</UserControl>

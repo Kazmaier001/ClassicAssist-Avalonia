@@ -1,0 +1,22 @@
+<UserControl x:Class="ClassicAssist.UI.Views.Autoloot.AutolootPropertyControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ecv="clr-namespace:ClassicAssist.UI.Views.ECV"
+             xmlns:filter="clr-namespace:ClassicAssist.UI.Views.ECV.Filter.ValueConverters"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <filter:ConstraintEditorVisibilityConverter x:Key="ConstraintEditorVisibility" />
+    </UserControl.Resources>
+    <Grid>
+        <ComboBox Width="140"
+                  VerticalAlignment="Center"
+                  ItemsSource="{x:Static ecv:SkillBonusSelector.SkillNames}"
+                  SelectedItem="{Binding Additional, Mode=TwoWay}"
+                  IsVisible="{Binding Property, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=SkillBonus}" />
+        <TextBlock Text="{Binding Property.Name}"
+                   VerticalAlignment="Center"
+                   Margin="6,0,0,0"
+                   IsVisible="{Binding Property, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=PropertyName}" />
+    </Grid>
+</UserControl>

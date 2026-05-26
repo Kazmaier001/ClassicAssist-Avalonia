@@ -1,0 +1,35 @@
+<Window x:Class="ClassicAssist.UI.Views.AutologinStatusWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+        xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared" Topmost="True" WindowStartupLocation="CenterScreen"
+        Title="{x:Static resources:Strings.Autologin}" Width="400" Height="300"
+        Background="{DynamicResource ThemeWindowBackgroundBrush}" CanResize="False">
+    <Window.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+    </Window.Styles>
+    <Window.DataContext>
+        <viewModels:AutologinStatusViewModel />
+    </Window.DataContext>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ListBox Grid.Row="0" ItemsSource="{Binding Messages}">
+            <i:Interaction.Behaviors>
+                <behaviours:ItemsControlAutoScrollBehaviour />
+            </i:Interaction.Behaviors>
+        </ListBox>
+        <StackPanel Classes="dialog-buttons" Grid.Row="1" HorizontalAlignment="Right" Margin="0,5,0,0">
+            <Button Content="{x:Static resources:Strings.Cancel}" Command="{Binding CancelCommand}">
+                <i:Interaction.Behaviors>
+                    <behaviours:CloseOnClickBehaviour />
+                </i:Interaction.Behaviors>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

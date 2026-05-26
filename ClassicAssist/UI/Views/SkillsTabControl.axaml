@@ -1,0 +1,109 @@
+<UserControl x:Class="ClassicAssist.UI.Views.SkillsTabControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:misc="clr-namespace:ClassicAssist.Misc"
+             xmlns:data="clr-namespace:ClassicAssist.UO.Data"
+             xmlns:misc1="clr-namespace:ClassicAssist.UI.Misc"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels"
+             xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+             xmlns:sharedResources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:skills="clr-namespace:ClassicAssist.Data.Skills"
+             xmlns:b="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:behaviours="clr-namespace:ClassicAssist.UI.Misc.Behaviours">
+    <!-- DesignStyle removed (WPF-only) -->
+    <UserControl.DataContext>
+        <viewModels:SkillsTabViewModel />
+    </UserControl.DataContext>
+    <UserControl.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="130" />
+        </Grid.ColumnDefinitions>
+        <Grid.Resources>
+            <valueConverters:LockStatusValueConverter x:Key="LockStatusValueConverter" />
+            <!--ContextMenu in a different visual tree, https://stackoverflow.com/questions/3583507/wpf-binding-a-contextmenu-to-an-mvvm-command-->
+            <misc:BindingProxy x:Key="Proxy" Data="{Binding}" />
+            <ContextMenu x:Key="ItemContextMenu">
+                <!-- ReSharper disable Xaml.BindingWithContextNotResolved -->
+                <MenuItem Header="{x:Static sharedResources:Strings.Set_Up}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.SetSkillLocksCommand}"
+                          CommandParameter="{x:Static data:LockStatus.Up}" />
+                <MenuItem Header="{x:Static sharedResources:Strings.Set_Down}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.SetSkillLocksCommand}"
+                          CommandParameter="{x:Static data:LockStatus.Down}" />
+                <MenuItem Header="{x:Static sharedResources:Strings.Set_Locked}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.SetSkillLocksCommand}"
+                          CommandParameter="{x:Static data:LockStatus.Locked}" />
+                <Separator />
+                <MenuItem Header="{x:Static sharedResources:Strings.Use_skill}"
+                          Command="{Binding Source={StaticResource Proxy}, Path=Data.UseSkillCommand}" />
+                <!-- ReSharper restore Xaml.BindingWithContextNotResolved -->
+            </ContextMenu>
+        </Grid.Resources>
+        <Grid.Styles>
+            <Style Selector="Button">
+                <Setter Property="Margin" Value="0,7,0,0" />
+            </Style>
+        </Grid.Styles>
+        <DataGrid Grid.Column="0" ItemsSource="{Binding Items}" Margin="5"
+                  IsReadOnly="True"
+                  SelectedItem="{Binding SelectedItem}" ContextMenu="{StaticResource ItemContextMenu}">
+                <DataGrid.Columns>
+                    <!-- Width="*" so the longest skill names ("Item Identification",
+                         "Spirit Speak") aren't truncated by FluentTheme's DataGridCell
+                         padding (~12 DIP each side) eating into the WPF 130-DIP value.
+                         WPF showed the same clipping for the same reason. -->
+                    <misc1:SkillsGridViewColumn Header="{x:Static sharedResources:Strings.Name}"
+                                                Binding="{Binding Skill}" Width="*"
+                                                MinWidth="160"
+                                                SortField="Name" />
+                    <misc1:SkillsGridViewColumn Header="{x:Static sharedResources:Strings.Value}" Width="80"
+                                                SortField="Value"
+                                                Binding="{Binding Value}" />
+                    <misc1:SkillsGridViewColumn Header="{x:Static sharedResources:Strings.Base}" Width="75"
+                                                SortField="Base"
+                                                Binding="{Binding Base}" />
+                    <misc1:SkillsGridViewColumn Header="+/-" Width="65" SortField="Delta"
+                                                Binding="{Binding Delta, StringFormat={}{0:0.#}}" />
+                    <misc1:SkillsGridViewColumn Header="{x:Static sharedResources:Strings.Cap}" Width="75"
+                                                SortField="Cap"
+                                                Binding="{Binding Cap}" />
+                    <misc1:SkillsDataGridTemplateColumn Header="{x:Static sharedResources:Strings.Status}" Width="90"
+                                                       SortField="LockStatus">
+                        <misc1:SkillsDataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="skills:SkillEntry">
+                                <Image
+                                    Source="{Binding LockStatus, Converter={StaticResource LockStatusValueConverter}}"
+                                    HorizontalAlignment="Center" Width="40" Stretch="Uniform" Height="10"
+                                    VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </misc1:SkillsDataGridTemplateColumn.CellTemplate>
+                    </misc1:SkillsDataGridTemplateColumn>
+                </DataGrid.Columns>
+            <b:Interaction.Behaviors>
+                <behaviours:SkillsGridViewSortBehaviour SortChangedCommand="{Binding SortChangedCommand}"
+                                                        SetSortCommand="{Binding SetSortCommand, Mode=OneWayToSource}" />
+            </b:Interaction.Behaviors>
+        </DataGrid>
+        <StackPanel Grid.Column="1" Margin="10,0,10,10">
+            <Button Content="{x:Static sharedResources:Strings.Reset____}"
+                    Command="{Binding ResetDeltasCommand, Mode=OneWay}"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+            <TextBlock Text="{x:Static sharedResources:Strings.All_skills_}" Margin="0,20,0,0" />
+            <ComboBox x:Name="comboBox" ItemsSource="{misc1:EnumBindingSource {x:Type data:LockStatus}}"
+                      Margin="0,5,0,0" SelectedIndex="0"
+                      HorizontalAlignment="Stretch" />
+            <Button Content="{x:Static sharedResources:Strings.Set}"
+                    Command="{Binding SetAllSkillLocksCommand, Mode=OneWay}"
+                    CommandParameter="{Binding SelectedIndex, ElementName=comboBox}"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+            <TextBlock Text="{x:Static sharedResources:Strings.Total_base_}" Margin="0,30,0,0" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding TotalBase}" FontWeight="Bold" Margin="0,3,0,0" />
+        </StackPanel>
+    </Grid>
+</UserControl>

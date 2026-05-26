@@ -1,0 +1,37 @@
+<UserControl x:Class="ClassicAssist.UI.Views.ECV.EntityCollectionViewerOrganizerControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ClassicAssist.UI.Views.ECV"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls">
+    <UserControl.DataContext>
+        <local:EntityCollectionViewerOrganizerViewModel />
+    </UserControl.DataContext>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label Content="{x:Static resources:Strings.Organizer}" Margin="0,0,5,0" />
+            <ComboBox ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedEntry}" MinWidth="100"
+                      Grid.Column="1" SelectedIndex="0" />
+        </Grid>
+        <StackPanel Orientation="Horizontal" Grid.Column="1" Margin="0,0,5,0">
+            <Label Content="{x:Static resources:Strings.Destination_ID}" Margin="5,0,5,0" />
+            <ComboBox ItemsSource="{Binding Destinations}" Margin="0,0,5,0"
+                      SelectedItem="{Binding SelectedDestination}" MinWidth="100" SelectedIndex="0" />
+            <controls:ImageButton ImageSource="{StaticResource CrosshairIcon}" Command="{Binding TargetCommand}" />
+        </StackPanel>
+        <Button Content="{x:Static resources:Strings.Play}" Grid.Column="2" Command="{Binding PlayCommand}" />
+    </Grid>
+</UserControl>

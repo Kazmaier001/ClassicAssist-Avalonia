@@ -1,0 +1,85 @@
+<Window x:Class="ClassicAssist.UI.Views.ObjectInspectorWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+        xmlns:models="clr-namespace:ClassicAssist.UI.Models"
+        xmlns:behaviours="clr-namespace:ClassicAssist.UI.Misc.Behaviours" Topmost="True"
+        Background="#151515"
+        Title="{x:Static resources:Strings.Object_Inspector}" Height="396.8" Width="450">
+    <Window.DataContext>
+        <viewModels:ObjectInspectorViewModel />
+    </Window.DataContext>
+    <Window.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+    </Window.Styles>
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <!-- Header strip mirroring WPF GridViewColumn headers -->
+        <Border Grid.Row="0" Background="#2A2A2A" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{x:Static resources:Strings.Property}"
+                           Padding="8,4" FontWeight="SemiBold"
+                           Foreground="{DynamicResource ThemeForegroundBrush}" />
+                <TextBlock Grid.Column="1" Text="{x:Static resources:Strings.Value}"
+                           Padding="8,4" FontWeight="SemiBold"
+                           Foreground="{DynamicResource ThemeForegroundBrush}" />
+            </Grid>
+        </Border>
+        <!-- Right padding clears the 17-DIP scrollbar which overlays in Fluent's
+             ScrollViewer template (same trick used in the global TreeView style in
+             DarkTheme.axaml). 4 was too small — the row hover/selection background
+             extended under the scrollbar column. -->
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Visible" Padding="0,0,18,0">
+            <ItemsControl ItemsSource="{Binding Categories}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="viewModels:InspectorCategory">
+                        <Expander Classes="hotkey-category" Header="{Binding Name}" IsExpanded="{Binding IsExpanded}">
+                            <ListBox ItemsSource="{Binding Items}" BorderThickness="0"
+                                     Background="Transparent"
+                                     SelectedItem="{Binding $parent[Window].((viewModels:ObjectInspectorViewModel)DataContext).SelectedItem, Mode=TwoWay}">
+                                <i:Interaction.Behaviors>
+                                    <behaviours:ListViewDoubleClickBehaviour />
+                                </i:Interaction.Behaviors>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="models:ObjectInspectorData">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="150" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid Grid.Column="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Name}" TextWrapping="Wrap"
+                                                           Foreground="{DynamicResource ThemeForegroundBrush}" />
+                                                <Image Grid.Column="1" MaxHeight="12" Margin="4,0,4,0"
+                                                       Source="{StaticResource PointerIcon}"
+                                                       IsVisible="{Binding HasDoubleClick}" />
+                                            </Grid>
+                                            <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap"
+                                                       Margin="4,0,0,0"
+                                                       Foreground="{DynamicResource ThemeForegroundBrush}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Expander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</Window>

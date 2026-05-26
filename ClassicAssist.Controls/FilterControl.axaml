@@ -1,0 +1,35 @@
+<UserControl x:Name="userControl" x:Class="ClassicAssist.Controls.FilterControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/Icons.axaml" />
+                <ResourceInclude Source="avares://ClassicAssist.Shared/Resources/Colours.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid VerticalAlignment="Top">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Image Height="14" Source="{StaticResource SearchIcon}" Grid.Column="0" />
+        <TextBox Margin="5,0,0,0" x:Name="textBox"
+                 Text="{Binding #userControl.FilterText}"
+                 MinHeight="22" Padding="4,3"
+                 HorizontalAlignment="Stretch" Grid.Column="1">
+            <i:Interaction.Behaviors>
+                <behaviours:AutoFocusBehaviour />
+            </i:Interaction.Behaviors>
+        </TextBox>
+        <Button Background="Transparent" BorderThickness="0" Padding="0" Margin="-15,0,0,0"
+                Command="{Binding #userControl.CloseCommand}" Grid.Column="2"
+                IsVisible="{Binding #userControl.ShowCloseButton}">
+            <Image Height="8" Source="{StaticResource closeIcon}" />
+        </Button>
+    </Grid>
+</UserControl>

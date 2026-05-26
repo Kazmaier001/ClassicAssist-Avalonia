@@ -1,0 +1,45 @@
+<Window x:Class="ClassicAssist.UI.Views.Autoloot.PropertySelectionWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:autoloot="clr-namespace:ClassicAssist.UI.ViewModels.Autoloot"
+        xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+        Title="{x:Static resources:Strings.Choose_from_Item}" Height="250" Width="400"
+        Background="{DynamicResource ThemeWindowBackgroundBrush}" Topmost="True">
+    <Window.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </Window.Styles>
+    <Window.DataContext>
+        <autoloot:PropertySelectionViewModel />
+    </Window.DataContext>
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="100" />
+        </Grid.ColumnDefinitions>
+        <ListBox Grid.Column="0" ItemsSource="{Binding Properties}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding Selected}" />
+                        <Label Content="{Binding Name}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Classes="dialog-buttons" Grid.Column="1">
+            <Button Content="{x:Static resources:Strings.OK}" Margin="10,0,0,10" Command="{Binding OKCommand}">
+                <i:Interaction.Behaviors>
+                    <behaviours:CloseOnClickBehaviour />
+                </i:Interaction.Behaviors>
+            </Button>
+            <Button Content="{x:Static resources:Strings.Cancel}" Margin="10,0,0,10">
+                <i:Interaction.Behaviors>
+                    <behaviours:CloseOnClickBehaviour />
+                </i:Interaction.Behaviors>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

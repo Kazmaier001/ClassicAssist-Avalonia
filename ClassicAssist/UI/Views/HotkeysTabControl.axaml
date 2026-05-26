@@ -1,0 +1,151 @@
+﻿<UserControl x:Class="ClassicAssist.UI.Views.HotkeysTabControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels"
+             xmlns:controls="clr-namespace:ClassicAssist.UI.Controls"
+             xmlns:local="clr-namespace:ClassicAssist.Data.Hotkeys"
+             xmlns:misc="clr-namespace:ClassicAssist.Misc"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+             xmlns:sharedControls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+             xmlns:commands="clr-namespace:ClassicAssist.Data.Hotkeys.Commands"
+             d:DesignHeight="300" d:DesignWidth="500">
+    <UserControl.DataContext>
+        <viewModels:HotkeysTabViewModel />
+    </UserControl.DataContext>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <valueConverters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <valueConverters:AllTrueMultiConverter x:Key="AllTrueMulti" />
+            <!-- CollectionViewSource removed (WPF-only) -->
+<misc:BindingProxy x:Key="Proxy" Data="{Binding}" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+        <!-- GridViewColumnHeader style removed (WPF-only) -->
+    </UserControl.Styles>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="175" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <sharedControls:FilterControl Grid.Row="0" FilterText="{Binding FilterText}" Margin="5,10,5,0" />
+            <Border Grid.Row="1" Margin="5"
+                    Background="#151515" BorderBrush="#474747" BorderThickness="1">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Visible"
+                          AllowAutoHide="False"
+                          Padding="0,0,18,0"
+                          PointerWheelChanged="UIElement_OnPreviewMouseWheel">
+                <ItemsControl ItemsSource="{Binding FilterItems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Expander Classes="hotkey-category"
+                                      IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                                      Header="{Binding Name}" Margin="0,2">
+                                <ListBox ItemsSource="{Binding Children}"
+                                         Background="Transparent" BorderThickness="0"
+                                         Margin="20,0,0,0"
+                                         SelectedItem="{Binding Path=Data.SelectedItem, Source={StaticResource Proxy}, Mode=TwoWay}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate DataType="commands:HotkeyCommand">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Image Source="{Binding Image}" Stretch="None"
+                                                       Margin="0,0,5,0" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Name}"
+                                                           ToolTip.Tip="{Binding Tooltip}"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Expander>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            </Border>
+        </Grid>
+        <HeaderedContentControl Grid.Column="1" Header="{x:Static resources:Strings.Hotkeys}" Margin="0, 10, 5, 5">
+            <Grid>
+                <Grid.Styles>
+                    <Style Selector="Button">
+                        <Setter Property="Padding" Value="4" />
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    </Style>
+                </Grid.Styles>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <controls:TextBoxKey x:Name="textBoxKey"
+                                     Shortcut="{Binding Hotkey}" Grid.Row="0"
+                                     Margin="10">
+                    <controls:TextBoxKey.IsEnabled>
+                        <MultiBinding Converter="{StaticResource AllTrueMulti}">
+                            <Binding Path="SelectedItem.IsCategory" Converter="{StaticResource InverseBooleanConverter}" />
+                            <Binding Path="SelectedItem.Hotkey" />
+                        </MultiBinding>
+                    </controls:TextBoxKey.IsEnabled>
+                </controls:TextBoxKey>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Content="{x:Static resources:Strings.Clear}" Margin="10,0,10,5"
+                            Command="{Binding ClearHotkeyCommand}" CommandParameter="{Binding SelectedItem}"
+                            Grid.Column="0" IsEnabled="{Binding IsEnabled, ElementName=textBoxKey}" />
+                </Grid>
+                <Grid Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <CheckBox Content="{x:Static resources:Strings.Pass_to_UO}" Margin="10,0,10,5"
+                              IsChecked="{Binding Path=SelectedItem.PassToUO, Mode=TwoWay}"
+                              Grid.Row="0" IsEnabled="{Binding IsEnabled, ElementName=textBoxKey}" />
+                    <CheckBox Content="{x:Static resources:Strings.Undisableable}" Margin="10,0,10,5"
+                              IsChecked="{Binding Path=SelectedItem.Disableable, Converter={StaticResource InverseBooleanConverter}, Mode=TwoWay}"
+                              Grid.Row="1" IsEnabled="{Binding IsEnabled, ElementName=textBoxKey}" />
+                    <CheckBox Content="{x:Static resources:Strings.Global}" Margin="10,0,10,5"
+                              IsChecked="{Binding Path=SelectedItem.IsGlobal}"
+                              Grid.Row="2">
+                        <CheckBox.IsEnabled>
+                            <MultiBinding Converter="{StaticResource AllTrueMulti}">
+                                <Binding Path="IsEnabled" ElementName="textBoxKey" />
+                                <Binding Path="SelectedItem.CanGlobal" />
+                            </MultiBinding>
+                        </CheckBox.IsEnabled>
+                    </CheckBox>
+                </Grid>
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Content="{x:Static resources:Strings.Execute}" Margin="10,0,10,5"
+                            Command="{Binding ExecuteCommand}" CommandParameter="{Binding SelectedItem}"
+                            Grid.Column="0" IsEnabled="{Binding IsEnabled, ElementName=textBoxKey}" />
+                </Grid>
+                <Button Grid.Row="4" Margin="10,0,10,5" Content="{x:Static resources:Strings.Create_Macro_Button}"
+                        Command="{Binding CreateMacroButtonCommand}"
+                        IsEnabled="{Binding IsEnabled, ElementName=textBoxKey}" />
+                <Button Grid.Row="5" Margin="10,0,10,5" Content="{x:Static resources:Strings.Options}"
+                        Command="{Binding ConfigureHotkeyCommand}"
+                        CommandParameter="{Binding SelectedItem}" />
+            </Grid>
+        </HeaderedContentControl>
+    </Grid>
+</UserControl>

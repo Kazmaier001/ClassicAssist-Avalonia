@@ -1,0 +1,56 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:debug="clr-namespace:ClassicAssist.UI.Views.Debug"
+    x:Name="window"
+    x:Class="ClassicAssist.UI.Views.DebugWindow"
+    Title="Debug Window" Height="450" Width="600"
+    Background="{DynamicResource ThemeWindowBackgroundBrush}" Topmost="True">
+    <Window.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+        <StyleInclude Source="Debug/Styles.axaml" />
+    </Window.Styles>
+    <TabControl Margin="10" Padding="10" x:Name="TabControl">
+        <TabItem Header="{x:Static resources:Strings.Packets}">
+            <debug:DebugPacketsControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Gumps}">
+            <debug:DebugGumpControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Menus}">
+            <debug:DebugMenusControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.BuffIcon}">
+            <debug:DebugBuffIconsControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Special_Moves}">
+            <debug:DebugSpecialMovesControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Vendor_Buy}">
+            <debug:DebugVendorBuyControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Autoloot}">
+            <debug:DebugAutolootControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Property}">
+            <debug:DebugPropertiesControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Journal}">
+            <debug:DebugJournalControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Additional_Assemblies}">
+            <debug:DebugAssembliesControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Keyboard}">
+            <debug:DebugKeyboardControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Actions}">
+            <debug:DebugActionQueueControl />
+        </TabItem>
+        <TabItem Header="Packet Queue">
+            <debug:DebugPacketQueueControl />
+        </TabItem>
+    </TabControl>
+</Window>

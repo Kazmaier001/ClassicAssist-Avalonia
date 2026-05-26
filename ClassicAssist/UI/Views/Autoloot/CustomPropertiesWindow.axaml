@@ -1,0 +1,87 @@
+<Window x:Class="ClassicAssist.UI.Views.Autoloot.CustomPropertiesWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:autoloot1="clr-namespace:ClassicAssist.UI.ViewModels.Autoloot"
+        xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+        xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+        xmlns:valueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+        Title="{x:Static resources:Strings.Define_Custom_Properties}" Height="350" Width="725"
+        Background="{DynamicResource ThemeWindowBackgroundBrush}" Topmost="True">
+    <Window.DataContext>
+        <autoloot1:CustomPropertiesViewModel />
+    </Window.DataContext>
+    <Window.Resources>
+        <ResourceDictionary>
+            <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </Window.Styles>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="170" />
+        </Grid.ColumnDefinitions>
+        <DataGrid x:Name="listView1" Grid.Column="0" Margin="10"
+                  ItemsSource="{Binding Properties}" SelectedItem="{Binding SelectedProperty}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="{x:Static resources:Strings.Property}" Width="200"
+                                    Binding="{Binding Name}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="{x:Static resources:Strings.Cliloc}" Width="100"
+                                    Binding="{Binding Cliloc}" IsReadOnly="True" />
+                    <DataGridTemplateColumn Header="{x:Static resources:Strings.Arguments}" Width="75">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="autoloot1:CustomProperty">
+                                <CheckBox IsChecked="{Binding Arguments}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="{x:Static resources:Strings.Argument_Index}" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="autoloot1:CustomProperty">
+                                <controls:EditTextBlock Text="{Binding ArgumentIndex}"
+                                                        Foreground="{StaticResource ThemeForegroundBrush}"
+                                                        ShowIcon="True"
+                                                        IsVisible="{Binding Arguments}"
+ />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+        </DataGrid>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.Styles>
+                <Style Selector="Button">
+                    <Setter Property="Margin" Value="0,10, 10, 0" />
+                </Style>
+            </Grid.Styles>
+            <StackPanel Grid.Row="0">
+                <Button Content="{x:Static resources:Strings.Choose_from_Item}"
+                        Command="{Binding ChooseFromItemCommand}" />
+                <Button Content="{x:Static resources:Strings.Choose_by_Cliloc}"
+                        Command="{Binding ChooseFromClilocCommand}" />
+                <Button Content="{x:Static resources:Strings.Remove}" Command="{Binding RemoveCommand}" />
+            </StackPanel>
+            <StackPanel Classes="dialog-buttons" Grid.Row="1" Margin="0,0,0,10">
+                <Button Content="{x:Static resources:Strings.Save}" Command="{Binding SaveCommand}">
+                    <i:Interaction.Behaviors>
+                        <behaviours:CloseOnClickBehaviour />
+                    </i:Interaction.Behaviors>
+                </Button>
+                <Button Content="{x:Static resources:Strings.Cancel}">
+                    <i:Interaction.Behaviors>
+                        <behaviours:CloseOnClickBehaviour />
+                    </i:Interaction.Behaviors>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,226 @@
+#region License
+
+// Copyright (C) 2020 Reetus
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#endregion
+
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
+using ClassicAssist.Misc;
+using ClassicAssist.Shared.UI;
+using ClassicAssist.UI.Views.ECV.Settings.Models;
+using Newtonsoft.Json.Linq;
+
+namespace ClassicAssist.Data.Misc
+{
+    public class EntityCollectionViewerOptions : SetPropertyNotifyChanged
+    {
+        private bool _alwaysOnTop;
+        private ObservableCollection<Assembly> _assemblies = new ObservableCollection<Assembly>();
+        // Avoid NRE in consumers when no profile has populated these (.Any on null source).
+        private ObservableCollection<CombineStacksOpenContainersIgnoreEntry> _combineStacksIgnore =
+            new ObservableCollection<CombineStacksOpenContainersIgnoreEntry>();
+        private ObservableCollection<ContainerSet> _containerSets = new ObservableCollection<ContainerSet>();
+        private ObservableCollection<CombineStacksOpenContainersIgnoreEntry> _openContainersIgnore =
+            new ObservableCollection<CombineStacksOpenContainersIgnoreEntry>();
+        private bool _openContainersOnlyKnownContainers;
+        private bool _showChildItems;
+
+        public bool AlwaysOnTop
+        {
+            get => _alwaysOnTop;
+            set => SetProperty( ref _alwaysOnTop, value );
+        }
+
+        public ObservableCollection<Assembly> Assemblies
+        {
+            get => _assemblies;
+            set => SetProperty( ref _assemblies, value );
+        }
+
+        public ObservableCollection<CombineStacksOpenContainersIgnoreEntry> CombineStacksIgnore
+        {
+            get => _combineStacksIgnore;
+            set => SetProperty( ref _combineStacksIgnore, value );
+        }
+
+        public ObservableCollection<ContainerSet> ContainerSets
+        {
+            get => _containerSets;
+            set => SetProperty( ref _containerSets, value );
+        }
+
+        public string Hash { get; set; }
+
+        public ObservableCollection<CombineStacksOpenContainersIgnoreEntry> OpenContainersIgnore
+        {
+            get => _openContainersIgnore;
+            set => SetProperty( ref _openContainersIgnore, value );
+        }
+
+        public bool OpenContainersOnlyKnownContainers
+        {
+            get => _openContainersOnlyKnownContainers;
+            set => SetProperty( ref _openContainersOnlyKnownContainers, value );
+        }
+
+        public bool ShowChildItems
+        {
+            get => _showChildItems;
+            set => SetProperty( ref _showChildItems, value );
+        }
+
+        public static EntityCollectionViewerOptions Deserialize( JObject config )
+        {
+            EntityCollectionViewerOptions options = new EntityCollectionViewerOptions();
+
+            if ( config == null )
+            {
+                return options;
+            }
+
+            options.AlwaysOnTop = config["AlwaysOnTop"]?.ToObject<bool>() ?? false;
+            options.ShowChildItems = config["ShowChildItems"]?.ToObject<bool>() ?? false;
+            options.OpenContainersOnlyKnownContainers = config["OpenContainersOnlyKnownContainers"]?.ToObject<bool>() ?? false;
+
+            options.CombineStacksIgnore = new ObservableCollection<CombineStacksOpenContainersIgnoreEntry>();
+
+            if ( config["CombineStacksIgnore"] != null )
+            {
+                foreach ( JToken entry in config["CombineStacksIgnore"] )
+                {
+                    options.CombineStacksIgnore.Add( new CombineStacksOpenContainersIgnoreEntry
+                    {
+                        ID = entry["ID"]?.ToObject<int>() ?? 0, Cliloc = entry["Cliloc"]?.ToObject<int>() ?? -1, Hue = entry["Hue"]?.ToObject<int>() ?? -1
+                    } );
+                }
+            }
+
+            options.OpenContainersIgnore = new ObservableCollection<CombineStacksOpenContainersIgnoreEntry>();
+
+            if ( config["OpenContainersIgnore"] == null )
+            {
+                return options;
+            }
+
+            foreach ( JToken entry in config["OpenContainersIgnore"] )
+            {
+                options.OpenContainersIgnore.Add( new CombineStacksOpenContainersIgnoreEntry
+                {
+                    ID = entry["ID"]?.ToObject<int>() ?? 0, Cliloc = entry["Cliloc"]?.ToObject<int>() ?? -1, Hue = entry["Hue"]?.ToObject<int>() ?? -1
+                } );
+            }
+
+            options.Hash = config.ToString().SHA1();
+
+            options.Assemblies = new ObservableCollection<Assembly>();
+
+            if ( config["Assemblies"] != null )
+            {
+                foreach ( JToken assemblyName in config["Assemblies"] )
+                {
+                    try
+                    {
+                        Assembly assembly = Assembly.LoadFile( assemblyName.ToObject<string>() );
+
+                        options.Assemblies.Add( assembly );
+                    }
+                    catch
+                    {
+                        // We tried
+                    }
+                }
+            }
+
+            options.ContainerSets = new ObservableCollection<ContainerSet>();
+
+            if ( config["ContainerSets"] == null )
+            {
+                return options;
+            }
+
+            foreach ( JToken set in config["ContainerSets"] )
+            {
+                foreach ( JProperty property in set.Children<JProperty>() )
+                {
+                    options.ContainerSets.Add( new ContainerSet() { Name = property.Name, Items = property.Value.ToObject<ObservableCollection<int>>() } );
+                }
+            }
+
+            return options;
+        }
+
+        public static JToken Serialize( EntityCollectionViewerOptions options )
+        {
+            JObject config = new JObject { { "AlwaysOnTop", options.AlwaysOnTop }, { "ShowChildItems", options.ShowChildItems } };
+
+            JArray combineStacksIgnore = new JArray();
+
+            if ( options.CombineStacksIgnore != null )
+            {
+                foreach ( CombineStacksOpenContainersIgnoreEntry entry in options.CombineStacksIgnore )
+                {
+                    combineStacksIgnore.Add( new JObject { { "ID", entry.ID }, { "Cliloc", entry.Cliloc }, { "Hue", entry.Hue } } );
+                }
+
+                config.Add( "CombineStacksIgnore", combineStacksIgnore );
+            }
+
+            config["OpenContainersOnlyKnownContainers"] = options.OpenContainersOnlyKnownContainers;
+
+            JArray openContainersIgnore = new JArray();
+
+            if ( options.OpenContainersIgnore == null )
+            {
+                return config;
+            }
+
+            foreach ( CombineStacksOpenContainersIgnoreEntry entry in options.OpenContainersIgnore )
+            {
+                openContainersIgnore.Add( new JObject { { "ID", entry.ID }, { "Cliloc", entry.Cliloc }, { "Hue", entry.Hue } } );
+            }
+
+            config.Add( "OpenContainersIgnore", openContainersIgnore );
+
+            if ( options.Assemblies == null || options.Assemblies.Count == 0 )
+            {
+                return config;
+            }
+
+            JArray assemblies = new JArray();
+
+            foreach ( Assembly assembly in options.Assemblies )
+            {
+                assemblies.Add( assembly.Location );
+            }
+
+            config.Add( "Assemblies", assemblies );
+
+            JArray containerSets = new JArray();
+
+            foreach ( ContainerSet set in options.ContainerSets )
+            {
+                containerSets.Add( new JObject { { set.Name, new JArray( from id in set.Items select id ) } } );
+            }
+
+            config.Add( "ContainerSets", containerSets );
+
+            return config;
+        }
+    }
+}

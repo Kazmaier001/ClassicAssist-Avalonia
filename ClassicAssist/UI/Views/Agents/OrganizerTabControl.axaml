@@ -1,0 +1,173 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+    xmlns:agents="clr-namespace:ClassicAssist.UI.ViewModels.Agents"
+    xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+    xmlns:organizer="clr-namespace:ClassicAssist.Data.Organizer"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+    xmlns:misc="clr-namespace:ClassicAssist.UI.Misc"
+    xmlns:controls1="clr-namespace:ClassicAssist.UI.Controls"
+    xmlns:draggableListBox="clr-namespace:ClassicAssist.Controls.DraggableListBox;assembly=ClassicAssist.Controls"
+    xmlns:organizer1="clr-namespace:ClassicAssist.UI.Views.Agents.Organizer"
+    xmlns:local="clr-namespace:ClassicAssist.UI.Views.Agents"
+    xmlns:behaviours="clr-namespace:ClassicAssist.UI.Misc.Behaviours"
+    x:Name="userControl" x:Class="ClassicAssist.UI.Views.Agents.OrganizerTabControl"
+    d:DesignHeight="250" d:DesignWidth="500">
+    <!-- DesignStyle removed (WPF-only) -->
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <UserControl.DataContext>
+        <agents:OrganizerTabViewModel />
+    </UserControl.DataContext>
+    <Grid Margin="10">
+        <Grid.Resources>
+            <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" Margin="0,0,5,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.Resources>
+                <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+            </Grid.Resources>
+            <controls1:StretchyWrapPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
+                <Button Content="{Binding PlayStopButtonText}"
+                        Command="{Binding OrganizeCommand}" CommandParameter="{Binding SelectedItem}">
+                </Button>
+                <StackPanel Margin="5">
+                    <CheckBox Content="{x:Static resources:Strings.Stack}" IsChecked="{Binding SelectedItem.Stack}" />
+                </StackPanel>
+            </controls1:StretchyWrapPanel>
+            <Border Grid.Row="1" Background="#151515" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1">
+                <draggableListBox:DraggableListBox x:Name="listBox" ItemsSource="{Binding Items}"
+                                                   Background="Transparent" BorderThickness="0"
+                                                   SelectedItem="{Binding SelectedItem}">
+                <!-- InputBindings removed (WPF-only) -->
+                    <i:Interaction.Behaviors>
+                        <behaviours:ItemsControlSelectNewEntryBehaviour SelectedItem="{Binding SelectedItem}"
+                                                                  Type="{x:Type organizer:OrganizerEntry}" />
+                    </i:Interaction.Behaviors>
+                    <draggableListBox:DraggableListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <controls:EditTextBlock
+                                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+ />
+                            </Grid>
+                        </DataTemplate>
+                    </draggableListBox:DraggableListBox.ItemTemplate>
+                </draggableListBox:DraggableListBox>
+            </Border>
+            <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                <CheckBox Content="{x:Static resources:Strings.Complete}" IsChecked="{Binding SelectedItem.Complete}" />
+                <CheckBox Content="{x:Static resources:Strings.Return_Excess}"
+                          IsChecked="{Binding SelectedItem.ReturnExcess}">
+                </CheckBox>
+                <Button Content="{x:Static resources:Strings.New}" Margin="0,5,0,0"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Command="{Binding NewOrganizerEntryCommand}" />
+                <Button Content="{x:Static resources:Strings.Remove}" Margin="0,5,0,0"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Command="{Binding RemoveOrganizerAgentEntryCommand}" CommandParameter="{Binding SelectedItem}" />
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Column="1" Margin="5,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <DataGrid Grid.Row="0" x:Name="itemsListView" ItemsSource="{Binding SelectedItem.Items}" AutoGenerateColumns="False" IsReadOnly="True"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="{x:Static resources:Strings.Item}" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type organizer:OrganizerItem}">
+                                            <controls:EditTextBlock
+                                                Text="{Binding Item, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+ />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="{x:Static resources:Strings.Graphic}" Width="100"
+                                                Binding="{Binding ID, StringFormat=0x\{0:x\}}" />
+                                <DataGridTemplateColumn Header="{x:Static resources:Strings.Color}" Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="organizer:OrganizerItem">
+                                            <Grid>
+                                                <controls:EditTextBlock
+                                                    Text="{Binding Hue, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+
+                                                    ShowIcon="True" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="{x:Static resources:Strings.Amount}" Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="organizer:OrganizerItem">
+                                            <Grid>
+                                                <controls:EditTextBlock
+                                                    Text="{Binding Amount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+
+                                                    ShowIcon="True" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="{x:Static resources:Strings.Source}" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="organizer:OrganizerItem">
+                                            <organizer1:SourceDestinationOverrideControl
+                                                Margin="0,0,6,0"
+                                                Serial="{Binding SourceContainer}"
+                                                SetCommand="{Binding DataContext.SetEntrySourceContainerCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:OrganizerTabControl}}}"
+                                                SetCommandParameter="{Binding}"
+                                                ClearCommand="{Binding DataContext.ClearEntrySourceContainerCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:OrganizerTabControl}}}"
+ />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="{x:Static resources:Strings.Destination}" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="organizer:OrganizerItem">
+                                            <organizer1:SourceDestinationOverrideControl
+                                                Margin="0,0,6,0"
+                                                Serial="{Binding DestinationContainer}"
+                                                SetCommand="{Binding DataContext.SetEntryDestinationContainerCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:OrganizerTabControl}}}"
+                                                SetCommandParameter="{Binding}"
+                                                ClearCommand="{Binding DataContext.ClearEntryDestinationContainerCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:OrganizerTabControl}}}"
+ />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                </DataGrid>
+                <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,5,0,0">
+                    <StackPanel.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Margin" Value="0,0,5,0" />
+                        </Style>
+                    </StackPanel.Styles>
+                    <Button Content="{x:Static resources:Strings.Set_Containers}"
+                            Command="{Binding SetContainersCommand}" CommandParameter="{Binding SelectedItem}" />
+                    <Button Content="{x:Static resources:Strings.Remove}" Command="{Binding RemoveItemCommand}"
+                            CommandParameter="{Binding SelectedItem, ElementName=itemsListView}" />
+                    <Button Content="{x:Static resources:Strings.Insert}" Command="{Binding InsertItemCommand}"
+                            CommandParameter="{Binding SelectedItem}" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

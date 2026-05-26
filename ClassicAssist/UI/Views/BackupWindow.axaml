@@ -1,0 +1,42 @@
+<Window x:Class="ClassicAssist.UI.Views.BackupWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ValueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels"
+        xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared" Background="{DynamicResource ThemeWindowBackgroundBrush}"
+        WindowStartupLocation="CenterScreen"
+        Title="{x:Static resources:Strings.Profile_Backup}" Height="500" Width="600">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <ValueConverters:BoolToIsVisibleConverter x:Key="BoolToIsVisibleConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.Styles>
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+    </Window.Styles>
+    <Window.DataContext>
+        <viewModels:BackupWindowViewModel />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="5" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="{x:Static resources:Strings.Profile_backup_in_progress___}" Margin="10" />
+        <ListBox ItemsSource="{Binding Messages}" Grid.Row="1" Margin="10,0,10,10">
+            <i:Interaction.Behaviors>
+                <behaviours:ItemsControlAutoScrollBehaviour />
+            </i:Interaction.Behaviors>
+        </ListBox>
+        <ProgressBar IsIndeterminate="True" Grid.Row="2"
+                     IsVisible="{Binding IsWorking, Converter={StaticResource BoolToIsVisibleConverter}}" />
+    </Grid>
+</Window>

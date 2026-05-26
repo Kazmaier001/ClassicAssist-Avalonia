@@ -1,0 +1,195 @@
+<UserControl x:Class="ClassicAssist.UI.Views.Debug.DebugPacketsControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:controls="clr-namespace:ClassicAssist.UI.Controls"
+             xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:debug="clr-namespace:ClassicAssist.UI.ViewModels.Debug"
+             xmlns:sharedControls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+             xmlns:local="clr-namespace:ClassicAssist.UI.Views.Debug"
+             xmlns:headered="clr-namespace:ClassicAssist.Controls.Headered;assembly=ClassicAssist.Controls"
+             xmlns:misc="clr-namespace:ClassicAssist.UI.Misc"
+             xmlns:packetFilter="clr-namespace:ClassicAssist.UO.Network.PacketFilter"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Styles>
+        <StyleInclude Source="Styles.axaml" />
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+        <!-- Override DarkTheme.axaml's gray ComboBoxItem hover/select for this
+             specific combo only. Declared AFTER the StyleInclude so source-order
+             priority favors these setters. Class-scoped to "EnabledPacketsBlue"
+             so other combos in this control keep the default theme. -->
+        <Style Selector="ComboBox.EnabledPacketsBlue ComboBoxItem:pointerover">
+            <Setter Property="Background" Value="#1B3A52" />
+            <Setter Property="BorderBrush" Value="#26A0DA" />
+        </Style>
+        <Style Selector="ComboBox.EnabledPacketsBlue ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1B3A52" />
+            <Setter Property="BorderBrush" Value="#26A0DA" />
+        </Style>
+        <Style Selector="ComboBox.EnabledPacketsBlue ComboBoxItem:selected">
+            <Setter Property="Background" Value="#1B3A52" />
+            <Setter Property="BorderBrush" Value="#26A0DA" />
+        </Style>
+        <Style Selector="ComboBox.EnabledPacketsBlue ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1B3A52" />
+            <Setter Property="BorderBrush" Value="#26A0DA" />
+        </Style>
+        <Style Selector="ComboBox.EnabledPacketsBlue ComboBoxItem:selected:pointerover">
+            <Setter Property="Background" Value="#274C66" />
+            <Setter Property="BorderBrush" Value="#26A0DA" />
+        </Style>
+        <Style Selector="ComboBox.EnabledPacketsBlue ComboBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#274C66" />
+            <Setter Property="BorderBrush" Value="#26A0DA" />
+        </Style>
+    </UserControl.Styles>
+    <UserControl.DataContext>
+        <debug:DebugPacketsViewModel />
+    </UserControl.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <sharedControls:ImageButton Command="{Binding ClearCommand}" ImageSource="{StaticResource RemoveIcon}"
+                                        ToolTip.Tip="{x:Static resources:Strings.Clear_All}" />
+            <sharedControls:ImageButton Command="{Binding ViewPlayerEquipmentCommand}"
+                                        ToolTip.Tip="View Player Equipment" ImageSource="{StaticResource PersonIcon}" />
+            <sharedControls:ImageButton Command="{Binding ExportLogCommand}" CommandParameter="{Binding Items}"
+                                        Margin="0,0,5,0" ToolTip.Tip="{x:Static resources:Strings.Save}"
+                                        ImageSource="{StaticResource ExportIcon}" />
+            <ComboBox ItemsSource="{Binding PacketEntries}" Width="100" BorderThickness="1"
+                      Classes="EnabledPacketsBlue"
+                      Background="{DynamicResource ThemeBackgroundBrush}"
+                      Foreground="{DynamicResource ThemeForegroundBrush}"
+                      BorderBrush="{DynamicResource ThemeBorderBrush}">
+                <!-- ItemContainerTheme reaches popup-hosted items; scoped
+                     ComboBox.Styles does not (popup lives in OverlayLayer,
+                     outside the ComboBox's logical style scope).
+
+                     Verified via TestHost inspect-debug-packets dump:
+                     ICT item-level selectors (caret, caret:pointerover, caret:selected)
+                     beat the global DarkTheme.axaml same-selector Styles, but
+                     ICT caret-template-PART_ContentPresenter selectors LOSE
+                     to global same-named template selectors. So set the
+                     visible colours directly on the item; PART_ContentPresenter
+                     TemplateBinds Background and BorderBrush from the host item. -->
+                <ComboBox.ItemContainerTheme>
+                    <ControlTheme TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                        <Setter Property="Foreground" Value="#E8E8E8" />
+                        <Style Selector="^:pointerover">
+                            <Setter Property="Foreground" Value="#FFFFFF" />
+                            <Setter Property="Background" Value="#1B3A52" />
+                            <Setter Property="BorderBrush" Value="#26A0DA" />
+                        </Style>
+                        <Style Selector="^:selected">
+                            <Setter Property="Foreground" Value="#FFFFFF" />
+                            <Setter Property="Background" Value="#1B3A52" />
+                            <Setter Property="BorderBrush" Value="#26A0DA" />
+                        </Style>
+                        <Style Selector="^:selected:pointerover">
+                            <Setter Property="Foreground" Value="#FFFFFF" />
+                            <Setter Property="Background" Value="#274C66" />
+                            <Setter Property="BorderBrush" Value="#26A0DA" />
+                        </Style>
+                    </ControlTheme>
+                </ComboBox.ItemContainerTheme>
+                <ComboBox.Template>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Grid x:Name="ToggleGrid" Background="Transparent"
+                                  PointerPressed="ToggleGrid_OnPointerPressed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{x:Static resources:Strings.Enabled_Packets}" Grid.Column="0"
+                                           VerticalAlignment="Center" />
+                                <Path x:Name="Arrow"
+                                      Grid.Column="1"
+                                      Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z"
+                                      Fill="{TemplateBinding Foreground}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Margin="6,0,0,0" />
+                            </Grid>
+                            <Popup x:Name="PART_Popup" Placement="Bottom"
+                                   IsOpen="{TemplateBinding ComboBox.IsDropDownOpen}">
+                                <!-- Width: take the host ComboBox's actual rendered width so the popup
+                                     never measures narrower than the toggle button.
+                                     Right Padding reserves 18 DIP for the always-visible scrollbar
+                                     so item highlights stop short instead of painting under the bar. -->
+                                <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                        BorderThickness="1"
+                                        MinWidth="{Binding $parent[ComboBox].Bounds.Width}"
+                                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                        Padding="0,0,18,0">
+                                    <ScrollViewer VerticalScrollBarVisibility="Visible"
+                                                  AllowAutoHide="False">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </ComboBox.Template>
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Explicit TextBlock with pinned Foreground. CheckBox.Content as a
+                             string auto-wraps in a TextBlock that picks up the global
+                             "TextBlock:disabled" style (Foreground=#676767) when any ancestor
+                             reports IsEffectivelyEnabled=false — that ancestor exists here for
+                             popup-hosted CheckBoxes, so we'd render unreadable gray-on-dark. -->
+                        <CheckBox IsChecked="{Binding Enabled}"
+                                  Command="{Binding DataContext.ChangePacketEnabledCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:DebugPacketsControl}}}"
+                                  CommandParameter="{Binding}"
+                                  Foreground="{Binding $parent[ComboBoxItem].Foreground}">
+                            <TextBlock Text="{Binding Name}"
+                                       Foreground="{Binding $parent[ComboBoxItem].Foreground}" />
+                        </CheckBox>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <headered:HorizontalHeaderedContentControl Header="{x:Static resources:Strings.Direction}"
+                                                       Margin="10,0,0,0">
+                <ComboBox ItemsSource="{Binding Source={misc:EnumBindingSource {x:Type packetFilter:PacketDirection}}}" SelectedItem="{Binding Direction}" MinWidth="100" Margin="5,0,0,0" />
+            </headered:HorizontalHeaderedContentControl>
+            <CheckBox Margin="10,0,0,0" Content="{x:Static resources:Strings.Include_Internal}" IsChecked="{Binding IncludeInternal}" Foreground="{StaticResource ThemeForegroundBrush}"/>
+            <sharedControls:ImageButton ToolTip.Tip="{x:Static resources:Strings.Reset}" ImageSource="{StaticResource RefreshIcon}" Margin="10,0,0,0" Command="{Binding ResetCommand}"/>
+        </StackPanel>
+        <Border BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderBrush}" Grid.Row="1">
+            <ListBox ItemsSource="{Binding Items}">
+                <i:Interaction.Behaviors>
+                    <behaviours:ItemsControlAutoScrollBehaviour />
+                </i:Interaction.Behaviors>
+                <ListBox.Template>
+                    <ControlTemplate>
+                        <ScrollViewer>
+                            <ItemsPresenter />
+                        </ScrollViewer>
+                    </ControlTemplate>
+                </ListBox.Template>
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Background="{DynamicResource ThemeInnerControlBackgroundBrush}" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <controls:HexDumpControl Packet="{Binding}"
+                                                 PacketEntries="{Binding DataContext.PacketEntries, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:DebugPacketsControl}}}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,10,0,0">
+            <CheckBox Content="{x:Static resources:Strings.Enabled}" VerticalAlignment="Center"
+                      Margin="0,0,10,0" IsChecked="{Binding Enabled}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

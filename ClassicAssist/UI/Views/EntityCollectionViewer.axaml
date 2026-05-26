@@ -1,0 +1,172 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:viewModels="clr-namespace:ClassicAssist.UI.ViewModels"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+    xmlns:uimisc="clr-namespace:ClassicAssist.UI.Misc"
+    xmlns:models="clr-namespace:ClassicAssist.UI.Models"
+    xmlns:valueConverters="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+    xmlns:filter="clr-namespace:ClassicAssist.UI.Views.ECV.Filter"
+    xmlns:ecv="clr-namespace:ClassicAssist.UI.Views.ECV"
+    xmlns:local="clr-namespace:ClassicAssist.UI.Views"
+    xmlns:behaviours="clr-namespace:ClassicAssist.UI.Misc.Behaviours"
+    x:Name="window"
+    x:Class="ClassicAssist.UI.Views.EntityCollectionViewer" Background="{DynamicResource ThemeBackgroundBrush}"
+    Width="600" Title="{x:Static resources:Strings.Entity_Collection_Viewer}"
+    MinHeight="400" Height="600"
+    d:DataContext="{d:DesignInstance Type=viewModels:EntityCollectionViewerViewModel, IsDesignTimeCreatable=True}"
+    Topmost="{Binding Options.AlwaysOnTop}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- DebugToolBarStyle moved to Styles section -->
+                <ResourceInclude Source="ECV/Icons.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.Styles>
+        <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+        <StyleInclude Source="../../Resources/DarkTheme.axaml" />
+        <StyleInclude Source="ECV/Toolbar.axaml" />
+        <StyleInclude Source="ECV/ListStyles.axaml" />
+    </Window.Styles>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0"
+                 Background="{DynamicResource ThemeBackgroundBrush}">
+            <Button Height="24" Padding="0" Command="{Binding RefreshCommand}"
+                    ToolTip.Tip="{x:Static resources:Strings.Refresh}" Classes="ToolbarButtonStyle">
+                <Image Source="{StaticResource RefreshIcon}" />
+            </Button>
+            <ToggleButton Height="24" ToolTip.Tip="{x:Static resources:Strings.Toggle_item_properties}"
+                          Command="{Binding TogglePropertiesCommand}"
+                          CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Mode=Self}}" Classes="ToolbarToggleButtonStyle">
+                <Image Source="{StaticResource ListIcon}" />
+            </ToggleButton>
+            <ToggleButton x:Name="toggleButton" Height="24" IsChecked="{Binding ShowFilter}" Classes="ToolbarToggleButtonStyle">
+                <Image Source="{StaticResource FilterIcon}" />
+            </ToggleButton>
+            <ToggleButton Height="24" IsChecked="{Binding ShowOrganizer}" Classes="ToolbarToggleButtonStyle">
+                <Image Source="{StaticResource OrganizeIcon}" />
+            </ToggleButton>
+            <ToggleButton Height="24" ToolTip.Tip="{x:Static resources:Strings.Show_Child_Items}" Classes="ToolbarToggleButtonStyle"
+                          Command="{Binding ToggleChildItemsCommand}" IsChecked="{Binding Options.ShowChildItems}"
+                          CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Mode=Self}}">
+                <Image Source="{StaticResource BabyIcon}" />
+            </ToggleButton>
+            <ToggleButton Height="24" ToolTip.Tip="{x:Static resources:Strings.Always_On_Top}" Classes="ToolbarToggleButtonStyle"
+                          Command="{Binding ToggleAlwaysOnTopCommand}"
+                          CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Mode=Self}}"
+                          IsChecked="{Binding Options.AlwaysOnTop}">
+                <Image Source="{StaticResource PinIcon}" />
+            </ToggleButton>
+            <Button Height="24" Padding="0" Command="{Binding OpenAllContainersCommand}"
+                    ToolTip.Tip="{x:Static resources:Strings.Open_All_Containers}" Classes="ToolbarButtonStyle">
+                <Image Source="{StaticResource ContainerIcon}" Height="19" />
+            </Button>
+            <Menu Background="Transparent" Height="24">
+                <MenuItem Height="24">
+                    <MenuItem.Header>
+                        <Image Source="{StaticResource SortIcon}" />
+                    </MenuItem.Header>
+                    <MenuItem Header="{x:Static resources:Strings.Name}" Command="{Binding ChangeSortStyleCommand}"
+                              CommandParameter="{x:Static models:EntityCollectionSortStyle.Name}" />
+                    <MenuItem Header="{x:Static resources:Strings.Serial}"
+                              Command="{Binding ChangeSortStyleCommand}"
+                              CommandParameter="{x:Static models:EntityCollectionSortStyle.Serial}" />
+                    <MenuItem Header="{x:Static resources:Strings.Color}"
+                              Command="{Binding ChangeSortStyleCommand}"
+                              CommandParameter="{x:Static models:EntityCollectionSortStyle.Hue}" />
+                    <MenuItem Header="{x:Static resources:Strings.Graphic}"
+                              Command="{Binding ChangeSortStyleCommand}"
+                              CommandParameter="{x:Static models:EntityCollectionSortStyle.ID}" />
+                    <MenuItem Header="{x:Static resources:Strings.Amount}"
+                              Command="{Binding ChangeSortStyleCommand}"
+                              CommandParameter="{x:Static models:EntityCollectionSortStyle.Quantity}" />
+                </MenuItem>
+            </Menu>
+            <Button Height="24" Classes="ToolbarButtonStyle" Command="{Binding CombineStacksCommand}"
+                    ToolTip.Tip="{x:Static resources:Strings.Combine_stacks}">
+                <Image Source="{StaticResource consolidateIcon}" />
+            </Button>
+            <Button Height="20" Padding="0" Command="{Binding ReplaceNameCommand}"
+                    ToolTip.Tip="{x:Static resources:Strings.Replace_name_with_single_click_label}" Classes="ToolbarButtonStyle"
+                    IsVisible="{Binding !TooltipsEnabled}">
+                <Image Source="{StaticResource HandPointerIcon}" />
+            </Button>
+            <Button Height="24" Classes="ToolbarButtonStyle" Command="{Binding TargetContainerCommand}">
+                <Image Source="{StaticResource CrosshairIcon}" />
+            </Button>
+            <Button Height="24" Classes="ToolbarButtonStyle"
+                    Command="{Binding AutolootContainerCommand}" ToolTip.Tip="{x:Static resources:Strings.Autoloot}">
+                <Image Source="{StaticResource AutoLootIcon}" />
+            </Button>
+            <Button Height="24" Classes="ToolbarButtonStyle" Command="{Binding ConfigureCommand}">
+                <Image Source="{StaticResource configureIcon}" />
+            </Button>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1"
+                      IsVisible="{Binding ShowFilter}"
+                      VerticalScrollBarVisibility="Auto">
+            <filter:EntityCollectionFilterControl MaxHeight="400"
+                                                  Command="{Binding DataContext.ApplyFiltersCommand, ElementName=window}"
+                                                  Assemblies="{Binding DataContext.Options.Assemblies, ElementName=window}" />
+        </ScrollViewer>
+        <Grid Grid.Row="2"
+              IsVisible="{Binding ShowOrganizer}">
+            <ecv:EntityCollectionViewerOrganizerControl
+                Collection="{Binding DataContext.Collection, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:EntityCollectionViewer}}}"
+                QueueActions="{Binding DataContext.QueueActions, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:EntityCollectionViewer}}}" />
+        </Grid>
+        <!-- ListBox + WrapPanel tile layout matches the WPF ListView + GridView
+             template. The DataGrid stub the original port left here had no
+             columns and rendered empty. ItemsPanel and ItemTemplate come from
+             ECV/ListStyles.axaml resources keyed "ItemsPanelTemplate" /
+             "DataTemplate". -->
+        <ListBox x:Name="listView" ItemsSource="{Binding Entities}"
+                 SelectionMode="Multiple"
+                 BorderThickness="0" MinHeight="200"
+                 Background="{DynamicResource ThemeInnerControlBackgroundBrush}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 Grid.Row="3"
+                 ItemsPanel="{StaticResource ItemsPanelTemplate}"
+                 ItemTemplate="{StaticResource DataTemplate}">
+            <i:Interaction.Behaviors>
+                <behaviours:MultiSelectionBehaviour SelectedItems="{Binding SelectedItems}" />
+            </i:Interaction.Behaviors>
+        </ListBox>
+        <ItemsControl ItemsSource="{Binding QueueActions}" Grid.Row="4">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <!-- Inline Grid.Style removed (WPF-only, use Avalonia Styles) -->
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Status}" Foreground="{DynamicResource ThemeForegroundBrush}"
+                                   Padding="3,0,0,0"
+                                   Grid.Column="0" VerticalAlignment="Center" />
+                        <Button Command="{Binding CancelCommand}" BorderThickness="0" BorderBrush="Transparent"
+                                Background="Transparent" Grid.Column="1" Padding="0"
+                                ToolTip.Tip="{x:Static resources:Strings.Cancel}">
+                            <Image Source="{StaticResource CancelIcon}" Height="16" />
+                        </Button>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <StackPanel Orientation="Horizontal" Grid.Row="5" Background="{DynamicResource ThemeBackgroundBrush}">
+            <TextBlock Text="{Binding StatusLabel}" />
+        </StackPanel>
+    </Grid>
+</Window>

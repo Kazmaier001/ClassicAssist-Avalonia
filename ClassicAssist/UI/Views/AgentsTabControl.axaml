@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="ClassicAssist.UI.Views.AgentsTabControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:agents="clr-namespace:ClassicAssist.UI.Views.Agents"
+             xmlns:misc="clr-namespace:ClassicAssist.Misc"
+             xmlns:data="clr-namespace:ClassicAssist.Data"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <TabControl Margin="5"
+                SelectedIndex="{Binding SelectedTabIndexAgents, Source={x:Static data:Options.CurrentOptions}}">
+        <TabItem Header="{x:Static resources:Strings.Organizer}">
+            <agents:OrganizerTabControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Dress}">
+            <agents:DressTabControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Counters}">
+            <agents:CountersTabControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Friends}">
+            <agents:FriendsTabControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Name_Overrides}">
+            <agents:NameOverrideTabControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Vendor_Buy}">
+            <agents:VendorBuyTabControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Vendor_Sell}">
+            <agents:VendorSellTabControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Scavenger}">
+            <agents:ScavengerTabControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Autoloot}">
+            <agents:AutolootTabControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Screenshot}">
+            <agents:ScreenshotTabControl />
+        </TabItem>
+        <TabItem Header="{x:Static resources:Strings.Trap_Pouches}">
+            <agents:TrapPouchTabControl/>
+        </TabItem>
+    </TabControl>
+</UserControl>

@@ -1,0 +1,66 @@
+<UserControl x:Class="ClassicAssist.UI.Views.Agents.FriendsTabControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+             xmlns:agents="clr-namespace:ClassicAssist.UI.ViewModels.Agents"
+             xmlns:draggableListBox="clr-namespace:ClassicAssist.Controls.DraggableListBox;assembly=ClassicAssist.Controls"
+             d:DesignHeight="300" d:DesignWidth="500">
+    <!-- DesignStyle removed (WPF-only) -->
+    <UserControl.DataContext>
+        <agents:FriendsTabViewModel />
+    </UserControl.DataContext>
+    <UserControl.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+    </UserControl.Styles>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Background="#151515"
+                    BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1">
+                <draggableListBox:DraggableListBox ItemsSource="{Binding Options.Friends}"
+                                                   Background="Transparent" BorderThickness="0"
+                                                   SelectedItem="{Binding SelectedItem}" />
+            </Border>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Content="{x:Static resources:Strings.Insert}" Grid.Column="0" Margin="0,5,5,5"
+                        Command="{Binding AddFriendCommand}" />
+                <Button Content="{x:Static resources:Strings.Remove}" Grid.Column="1" Margin="5"
+                        Command="{Binding RemoveFriendCommand}" CommandParameter="{Binding SelectedItem}" />
+                <Button Content="{x:Static resources:Strings.Import}" Grid.Column="2" Margin="5, 5, 0, 5"
+                        Command="{Binding ImportCommand}" />
+            </Grid>
+        </Grid>
+        <StackPanel Grid.Column="1" Margin="0,10,10,10">
+            <CheckBox Content="{x:Static resources:Strings.Include_party_members}"
+                      IsChecked="{Binding Options.IncludePartyMembersInFriends}" />
+            <CheckBox Content="{x:Static resources:Strings.Prevent_attacking_friends_in_war_mode}"
+                      IsChecked="{Binding Options.PreventAttackingFriendsInWarMode}" />
+            <CheckBox Content="{x:Static resources:Strings.Prevent_targeting_friends_with_Harmful_spells}"
+                      IsChecked="{Binding Options.PreventTargetingFriendsWithHarmful}" />
+            <StackPanel Orientation="Horizontal">
+                <CheckBox Content="{x:Static resources:Strings.Rehue_friends}"
+                          IsChecked="{Binding Options.CurrentOptions.RehueFriends}"
+                          Command="{Binding ChangeRehueOption}" />
+                <Button Margin="10,0,0,0" Padding="20,5" Command="{Binding SelectHueCommand}"
+                        IsEnabled="{Binding Options.CurrentOptions.RehueFriends}"
+                        CommandParameter="{Binding Options.CurrentOptions.RehueFriendsHue}">
+                    <Image Source="{StaticResource ColorWheelIcon}" Height="12" Width="12" />
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

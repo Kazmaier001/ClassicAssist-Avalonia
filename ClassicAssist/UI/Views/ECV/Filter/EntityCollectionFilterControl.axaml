@@ -1,0 +1,291 @@
+﻿<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+    xmlns:controls="clr-namespace:ClassicAssist.Controls;assembly=ClassicAssist.Controls"
+    xmlns:filter="clr-namespace:ClassicAssist.UI.Views.ECV.Filter"
+    xmlns:misc="clr-namespace:ClassicAssist.Misc"
+    xmlns:ecv="clr-namespace:ClassicAssist.UI.Views.ECV"
+    xmlns:agents="clr-namespace:ClassicAssist.UI.ViewModels.Agents"
+    xmlns:misc1="clr-namespace:ClassicAssist.UI.Misc"
+    xmlns:autoloot="clr-namespace:ClassicAssist.Data.Autoloot"
+    xmlns:data="clr-namespace:ClassicAssist.UO.Data"
+    xmlns:models="clr-namespace:ClassicAssist.UI.Views.ECV.Filter.Models"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+    xmlns:valueConverters="clr-namespace:ClassicAssist.UI.Misc.ValueConverters"
+    xmlns:filterVC="clr-namespace:ClassicAssist.UI.Views.ECV.Filter.ValueConverters"
+    xmlns:sharedVC="clr-namespace:ClassicAssist.Shared.UI.ValueConverters;assembly=ClassicAssist.Shared"
+    xmlns:views="clr-namespace:ClassicAssist.UI.Views"
+    xmlns:behaviours="clr-namespace:ClassicAssist.Controls.Misc.Behaviours;assembly=ClassicAssist.Controls"
+    xmlns:behaviours1="clr-namespace:ClassicAssist.UI.Misc.Behaviours"
+    x:Name="userControl" x:Class="ClassicAssist.UI.Views.ECV.Filter.EntityCollectionFilterControl"
+    Background="{DynamicResource ThemeBackgroundBrush}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <valueConverters:CellWidthValueConverter x:Key="CellWidthValueConverter" />
+            <valueConverters:HexToIntValueConverter x:Key="HexToIntValueConverter" />
+            <valueConverters:AutolootOperatorFilterValueConverter x:Key="AutolootOperatorFilterValueConverter" />
+            <filterVC:ConstraintEditorVisibilityConverter x:Key="ConstraintEditorVisibility" />
+            <sharedVC:NullToDoNothingConverter x:Key="NullToDoNothingConverter" />
+            <sharedVC:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+            <sharedVC:StringToIntConverter x:Key="StringToIntConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <StyleInclude Source="Styles.axaml" />
+    </UserControl.Styles>
+    <UserControl.DataContext>
+        <filter:EntityCollectionFilterViewModel />
+    </UserControl.DataContext>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="5">
+        <Grid Margin="10">
+            <Grid.Resources>
+                <misc:BindingProxy x:Key="DataContextProxy" Data="{Binding}" />
+            </Grid.Resources>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <controls:ImageButton ImageSource="{StaticResource AddIcon}" Margin="0,0,5,0"
+                                      Command="{Binding AddProfileCommand}" ToolTip.Tip="{x:Static resources:Strings.Add}" />
+                <controls:ImageButton ImageSource="{StaticResource RemoveIcon}" Margin="0,0,5,0"
+                                      Command="{Binding RemoveProfileCommand}"
+                                      ToolTip.Tip="{x:Static resources:Strings.Remove}" />
+                <ComboBox Width="200" ItemsSource="{Binding Profiles}"
+                          SelectedItem="{Binding SelectedProfile}" Classes="EditComboBox">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Width="{Binding ActualWidth, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ComboBox}}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Name}" HorizontalAlignment="Stretch" Grid.Column="0"/>
+                                <controls:ImageButton ImageSource="{StaticResource ClearIcon}" Grid.Column="1"
+                                                      Command="{Binding ElementName=userControl, Path=DataContext.RemoveProfileCommand}"
+                                                      CommandParameter="{Binding}">
+                                    <i:Interaction.Behaviors>
+                                        <behaviours:ImageButtonConfirmDeleteBehaviour />
+                                    </i:Interaction.Behaviors>
+                                </controls:ImageButton>
+                            </Grid>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                    <i:Interaction.Behaviors>
+                        <behaviours1:ComboBoxBehavior CommandBinding="{Binding ChangeProfileCommand}"
+                                                CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ComboBox}}}"
+                                                OnlyUserTriggered="True" />
+                    </i:Interaction.Behaviors>
+                </ComboBox>
+            </StackPanel>
+            <ItemsControl ItemsSource="{Binding Item.Groups}" Grid.Row="1">
+                <ItemsControl.Styles>
+        <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+                    <Style Selector="controls|ImageButton">
+                        <Setter Property="VerticalAlignment" Value="Top" />
+                        <Setter Property="ImageHeight" Value="14" />
+                    </Style>
+                </ItemsControl.Styles>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <!-- Header row: And/Or combo on the left (hidden for first group),
+                                 New-Group / Remove-Group icons on the right. Putting these in a
+                                 proper Auto row above the DataGrid avoids the WPF idiom of
+                                 overlapping Row 1 — Avalonia's DataGrid doesn't leave the
+                                 top-right dead space WPF did, so the icons rendered on top of
+                                 the first row. -->
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" Grid.Column="0">
+                                    <StackPanel.IsVisible>
+                                        <MultiBinding Converter="{StaticResource CollectionIndexZeroVisibilityConverter}">
+                                            <Binding Path="Data.Item.Groups"
+                                                     Source="{StaticResource DataContextProxy}" />
+                                            <Binding Path="." />
+                                        </MultiBinding>
+                                    </StackPanel.IsVisible>
+                                    <ComboBox ItemsSource="{misc1:EnumBindingSource {x:Type models:BooleanOperation}}"
+                                              MinWidth="100"
+                                              SelectedItem="{Binding Operation, Mode=TwoWay}" Margin="0,0,5,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,5,5">
+                                    <controls:ImageButton ImageSource="{StaticResource CirclePlusItem}"
+                                                          ToolTip.Tip="{x:Static resources:Strings.New_Group}"
+                                                          Command="{Binding Path=Data.NewGroupCommand, Source={StaticResource DataContextProxy}}"
+                                                          CommandParameter="{Binding}" />
+                                    <controls:ImageButton ImageSource="{StaticResource CircleRemoveIcon}"
+                                                          ToolTip.Tip="{x:Static resources:Strings.Remove_Group}"
+                                                          Command="{Binding Path=Data.RemoveGroupCommand, Source={StaticResource DataContextProxy}}"
+                                                          CommandParameter="{Binding}">
+                                        <controls:ImageButton.IsVisible>
+                                            <MultiBinding Converter="{StaticResource CollectionIndexZeroVisibilityConverter}">
+                                                <Binding Path="Data.Item.Groups"
+                                                         Source="{StaticResource DataContextProxy}" />
+                                                <Binding Path="." />
+                                            </MultiBinding>
+                                        </controls:ImageButton.IsVisible>
+                                    </controls:ImageButton>
+                                </StackPanel>
+                            </Grid>
+                            <DataGrid x:Name="listView" ItemsSource="{Binding Items}" Margin="0,5"
+                                      MinHeight="50" Grid.Row="1">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="&#x2713;" Width="30">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate DataType="{x:Type models:EntityCollectionFilterItem}">
+                                                    <CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Property}" Width="220">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate DataType="{x:Type models:EntityCollectionFilterItem}">
+                                                    <StackPanel VerticalAlignment="Center" Margin="0,4">
+                                                        <ComboBox SelectedItem="{Binding Constraint, Mode=TwoWay}"
+                                                                  ItemsSource="{Binding Path=Data.Constraints, Source={StaticResource DataContextProxy}}"
+                                                                  Width="200"
+                                                                  VerticalAlignment="Center">
+                                                            <ComboBox.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding Name}" />
+                                                                </DataTemplate>
+                                                            </ComboBox.ItemTemplate>
+                                                        </ComboBox>
+                                                        <ecv:SkillBonusSelector Margin="0,5,0,0"
+                                                            Width="200" HorizontalAlignment="Left"
+                                                            DataContext="{Binding}"
+                                                            IsVisible="{Binding Constraint, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=SkillBonus}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Operator}" Width="90">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate DataType="{x:Type models:EntityCollectionFilterItem}">
+                                                    <Border HorizontalAlignment="Center" VerticalAlignment="Center" Width="80" Background="Transparent">
+                                                        <ComboBox HorizontalAlignment="Stretch"
+                                                                  SelectedItem="{Binding Operator, Mode=TwoWay, Converter={StaticResource NullToDoNothingConverter}}">
+                                                            <ComboBox.ItemsSource>
+                                                                <MultiBinding
+                                                                    Converter="{StaticResource AutolootOperatorFilterValueConverter}">
+                                                                    <Binding Source="{x:Type autoloot:AutolootOperator}" />
+                                                                    <Binding Path="Constraint" />
+                                                                </MultiBinding>
+                                                            </ComboBox.ItemsSource>
+                                                            <ComboBox.ItemTemplate>
+                                                                <DataTemplate DataType="autoloot:AutolootOperator">
+                                                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                                </DataTemplate>
+                                                            </ComboBox.ItemTemplate>
+                                                        </ComboBox>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="{x:Static resources:Strings.Value}" Width="160">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate DataType="{x:Type models:EntityCollectionFilterItem}">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <ComboBox Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="14,0,8,0"
+                                                                  IsVisible="{Binding Constraint, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=Layer}"
+                                                                  SelectedItem="{Binding Value, Mode=TwoWay, Converter={StaticResource EnumToIntegerValueConverter}, ConverterParameter={x:Type data:Layer}}"
+                                                                  ItemsSource="{Binding Source={misc1:EnumBindingSource {x:Type data:Layer}}}" />
+                                                        <ComboBox Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="14,0,8,0"
+                                                                  IsVisible="{Binding Constraint, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=TileFlags}"
+                                                                  SelectedItem="{Binding Value, Mode=TwoWay, Converter={StaticResource EnumToIntegerValueConverter}, ConverterParameter={x:Type data:TileFlags}}"
+                                                                  ItemsSource="{Binding Source={misc1:EnumBindingSource {x:Type data:TileFlags}}}" />
+                                                        <views:MultiItemIDSelector Grid.Column="0" MinWidth="40"
+                                                                  HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="14,0,8,0"
+                                                                  Values="{Binding Values, Mode=TwoWay}"
+                                                                  IsVisible="{Binding Constraint, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=MultiItemID}" />
+                                                        <views:MultiClilocSelector Grid.Column="0" MinWidth="40"
+                                                                  HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="14,0,8,0"
+                                                                  Values="{Binding Values, Mode=TwoWay}"
+                                                                  IsVisible="{Binding Constraint, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=MultiCliloc}" />
+                                                        <ComboBox Grid.Column="0" MinWidth="40"
+                                                                  HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="14,0,8,0"
+                                                                  IsVisible="{Binding Constraint, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=AutolootMatch}"
+                                                                  ItemsSource="{Binding Path=Data.AutolootEntryNames, Source={StaticResource DataContextProxy}}"
+                                                                  SelectedItem="{Binding Additional, Mode=TwoWay}" />
+                                                        <controls:EditTextBlock Grid.Column="0"
+                                                                  HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="14,0,8,0"
+                                                                  ShowIcon="True"
+                                                                  IsVisible="{Binding Constraint, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=HexValue}"
+                                                                  Text="{Binding Value, Mode=TwoWay, Converter={StaticResource HexToIntValueConverter}}" />
+                                                        <controls:EditTextBlock Grid.Column="0"
+                                                                  HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="14,0,8,0"
+                                                                  ShowIcon="True"
+                                                                  IsVisible="{Binding Constraint, Converter={StaticResource ConstraintEditorVisibility}, ConverterParameter=Additional}"
+                                                                  Text="{Binding Additional, Mode=TwoWay}" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="+/-">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <StackPanel.Styles>
+        <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+                                                            <Style Selector="Button">
+                                                                <Setter Property="Padding" Value="5" />
+                                                            </Style>
+                                                        </StackPanel.Styles>
+                                                        <Button
+                                                            Command="{Binding Path=Data.AddCommand, Source={StaticResource DataContextProxy}}"
+                                                            CommandParameter="{Binding Path=ItemsSource, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}">
+                                                            <Image Source="{StaticResource PlusIcon}" Height="8" />
+                                                        </Button>
+                                                        <Button
+                                                            Command="{Binding Path=Data.RemoveCommand, Source={StaticResource DataContextProxy}}">
+                                                            <Button.CommandParameter>
+                                                                <MultiBinding
+                                                                    Converter="{StaticResource GroupItemMultiValueConverter}">
+                                                                    <Binding Path="ItemsSource"
+                                                                             RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}" />
+                                                                    <Binding
+                                                                        Path="." />
+                                                                </MultiBinding>
+                                                            </Button.CommandParameter>
+                                                            <Image Source="{StaticResource MinusIcon}" Height="8" />
+                                                        </Button>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2" Margin="10,0">
+                <StackPanel.Styles>
+                    <StyleInclude Source="avares://ClassicAssist.Shared/Resources/DebugToolBarStyle.axaml" />
+                    <!-- Shared chunky dialog-button look from other windows (mirrors WPF). -->
+                    <Style Selector="Button">
+                        <Setter Property="Margin" Value="10,0,0,0" />
+                        <Setter Property="Padding" Value="20,5" />
+                        <Setter Property="MinWidth" Value="80" />
+                    </Style>
+                </StackPanel.Styles>
+                <Button Content="{x:Static resources:Strings.Apply}" Command="{Binding ApplyCommand}" />
+                <Button Content="{x:Static resources:Strings.Reset}" Command="{Binding ResetCommand}" />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

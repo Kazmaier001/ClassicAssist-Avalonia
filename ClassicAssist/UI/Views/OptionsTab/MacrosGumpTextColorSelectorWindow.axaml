@@ -1,0 +1,71 @@
+<Window x:Class="ClassicAssist.UI.Views.OptionsTab.MacrosGumpTextColorSelectorWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:resources="clr-namespace:ClassicAssist.Shared.Resources;assembly=ClassicAssist.Shared"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:behaviours="clr-namespace:ClassicAssist.Shared.UI.Behaviours;assembly=ClassicAssist.Shared"
+        xmlns:optionsTab="clr-namespace:ClassicAssist.UI.Views.OptionsTab" Background="{DynamicResource ThemeWindowBackgroundBrush}"
+        Title="{x:Static resources:Strings.Text_Color}" Topmost="True"
+        SizeToContent="WidthAndHeight">
+    <Window.Styles>
+        <StyleInclude Source="../../../Resources/DarkTheme.axaml" />
+        <!-- ColorView's hex input is a TextBox named PART_HexTextBox in
+             the ColorView template. FluentTheme leaves its content
+             top-aligned, so "FFFFFF" sits high inside the field instead
+             of centred with the prefix "#" badge to its left. Centre it
+             vertically so the row reads cleanly. -->
+        <Style Selector="ColorView /template/ TextBox#PART_HexTextBox">
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </Window.Styles>
+    <Window.DataContext>
+        <optionsTab:MacrosGumpTextColorSelectorViewModel />
+    </Window.DataContext>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <!-- WPF used xctk:ColorCanvas — an inline HSV picker with hex/RGB
+             fields. Avalonia's `ColorPicker` is just a dropdown trigger
+             (a button that opens a popup); the inline equivalent is
+             `ColorView`, which lays out exactly like the WPF reference.
+             IsAlphaVisible/IsAlphaEnabled are bound to AllowAlpha (default
+             false) so the alpha channel slider is hidden — matches WPF
+             behavior. ClassicUO text-colour palettes use opaque RGB, so
+             there's no game-side use for partial transparency anyway. -->
+        <!-- IsAlphaEnabled MUST be set before Color: Avalonia ColorView
+             evaluates attribute setters in declaration order, and a Color
+             assigned while IsAlphaEnabled is still its default gets its
+             alpha channel stripped to 0xFF (verified via screenshot-debug
+             log — round-tripping #78FF0000 through the dialog returned
+             #FFFF0000). -->
+        <ColorView Grid.Row="0"
+                   IsAlphaVisible="{Binding AllowAlpha}"
+                   IsAlphaEnabled="{Binding AllowAlpha}"
+                   ColorModel="Rgba"
+                   IsColorModelVisible="False"
+                   Color="{Binding SelectedColor, Mode=TwoWay}" />
+        <StackPanel Classes="dialog-buttons" Orientation="Horizontal" Grid.Row="1"
+                    Margin="0,10,0,0" HorizontalAlignment="Right">
+            <StackPanel.Styles>
+                <Style Selector="Button">
+                    <Setter Property="Margin" Value="10,0,0,0" />
+                </Style>
+            </StackPanel.Styles>
+            <!-- OK button intentionally has no CloseOnClickBehaviour:
+                 Avalonia's Click fires BEFORE the bound Command, so the
+                 behaviour would close the window before OKCommand could
+                 set Result=true. The command itself sets Result and raises
+                 RequestClose (handled in code-behind) atomically. -->
+            <Button Content="{x:Static resources:Strings.OK}" Command="{Binding OKCommand}"
+                    CommandParameter="{Binding SelectedItem, ElementName=listView}" />
+            <Button Content="{x:Static resources:Strings.Cancel}">
+                <i:Interaction.Behaviors>
+                    <behaviours:CloseOnClickBehaviour />
+                </i:Interaction.Behaviors>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

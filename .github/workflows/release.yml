@@ -40,8 +40,12 @@ jobs:
           echo "version=$($tag -replace '^v','')" >> $env:GITHUB_OUTPUT
           echo "Tag: $tag"
 
-      - name: Restore
-        run: dotnet restore ClassicAssist.sln
+      # Restore only the projects we actually build for the release artifact —
+      # avoids dragging in net10.0-windows / net48 projects we don't need.
+      - name: Restore release projects
+        run: |
+          dotnet restore ClassicAssist/ClassicAssist.csproj
+          dotnet restore ClassicAssist.PluginLoader/PluginLoader.csproj
 
       - name: Build net10 plugin (Release)
         run: dotnet build ClassicAssist/ClassicAssist.csproj -c Release --no-restore

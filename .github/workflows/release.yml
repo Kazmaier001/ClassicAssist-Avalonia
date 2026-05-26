@@ -67,6 +67,23 @@ jobs:
                     Output\PluginLoader\ClassicAssist.PluginLoader.pdb `
                     -Destination Output\Plugin\
 
+      # NuGet bundles native runtimes for ~30 architectures we don't support
+      # (Android, iOS, tvOS, maccatalyst, linux-musl, linux-loongarch64,
+      # linux-riscv64, linux-arm32, linux-x86, etc.). Keep only the four
+      # we actually target. Cuts the staged folder from ~146 MB to ~65 MB
+      # of natives.
+      - name: Prune unused runtimes/ subfolders
+        shell: pwsh
+        run: |
+          $keep = @('win-x64', 'win-arm64', 'linux-x64', 'linux-arm64')
+          $runtimes = 'Output\Plugin\runtimes'
+          if (Test-Path $runtimes) {
+              Get-ChildItem $runtimes -Directory | Where-Object { $keep -notcontains $_.Name } | ForEach-Object {
+                  Remove-Item -Recurse -Force $_.FullName
+              }
+              "Kept:"; Get-ChildItem $runtimes -Directory | Select-Object -ExpandProperty Name
+          }
+
       - name: Package zip
         shell: pwsh
         run: |

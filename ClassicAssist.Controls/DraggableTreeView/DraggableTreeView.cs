@@ -90,6 +90,28 @@ namespace ClassicAssist.Controls.DraggableTreeView
 
         private void OnBindableSelectedItemChanged( object newValue )
         {
+            // Route through the base TreeView's canonical SelectedItem so it
+            // auto-deselects the previously-selected TreeViewItem. Setting only
+            // the new container's IsSelected = true leaves the old one visually
+            // selected too (double-highlight) — observed when the VM creates a
+            // new macro and assigns it as SelectedItem from code.
+            if ( !ReferenceEquals( SelectedItem, newValue ) )
+            {
+                SelectedItem = newValue;
+            }
+
+            // Safety net: walk realized containers and clear any stale
+            // IsSelected that the base SelectedItem update may have missed
+            // (e.g. when ItemsSource was just swapped and old containers
+            // haven't been recycled yet).
+            foreach ( var item in this.GetVisualDescendants().OfType<TreeViewItem>() )
+            {
+                if ( item.IsSelected && !ReferenceEquals( item.DataContext, newValue ) )
+                {
+                    item.IsSelected = false;
+                }
+            }
+
             if ( newValue == null )
                 return;
 

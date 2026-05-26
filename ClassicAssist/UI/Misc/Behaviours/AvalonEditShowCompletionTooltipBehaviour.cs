@@ -251,7 +251,10 @@ namespace ClassicAssist.UI.Misc.Behaviours
                 return;
             }
 
-            foreach ( PythonCompletionData item in data.Where( item => item.Content == null ) )
+            // Recreate Content every time. Avalonia rejects re-parenting any Visual that
+            // still has a parent ("already has a visual parent ContentPresenter"), so a
+            // CompletionEntry cached from a previous popup will throw on the next show.
+            foreach ( PythonCompletionData item in data )
             {
                 item.Content = new CompletionEntry( item.Name, item.Example, null /* SyntaxHighlighting N/A in AvaloniaEdit */ );
             }
